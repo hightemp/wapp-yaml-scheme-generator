@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>editor</title>
+</head>
+<body>
+    <div id="left-side">
+        <div class="top-panel">
+            <button onclick="fnRun" id="button-run">Run</button>
+            <button onclick="fnClear" id="button-clear">Clear</button>
+            <button onclick="fnLog" id="button-log">Log</button>
+            <button onclick="fnSaveToFile" id="button-save-to-file">Save to file</button>
+            <div>
+                <a href="https://visjs.github.io/vis-network/examples/">examples</a>
+            </div>
+            <div>
+                <a href="https://ww3.arb.ca.gov/ei/tools/lib/vis/docs/network.html">docs</a>
+            </div>
+        </div>
+        <div class="top-message">
+        </div>
+        <div id="editor" style="height: calc(100vh - 141px); width: 45vw;"></div>
+    </div>
+    <div id="right-side">
+        <div id="network"></div>
+    </div>
+</body>
+</html>
+
+<script src="https://ajaxorg.github.io/ace-builds/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://visjs.github.io/vis-network/standalone/umd/vis-network.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.js" integrity="sha512-CwxrLIN0dww6lRc/oKeZiI9oGlOob2HPMU0Yu0g+P3/G1cuTii+tt0jpyEKhilfrV7D/zmvKiVPIHUDU6xbBxg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+var oEditor = null;
+var oNetwork = null;
+var aNodes = [];
+var aEdges = [];
+var oEl = null;
+var oData = {};
+var sImageURL = "";
+var oOptions = {}
+
+document.body.addEventListener('click', function(e) {
+    var sID = e.target.id;
+
+    switch (sID) {
+        case "button-run": fnRun(); break;
+        case "button-clear": fnClear(); break;
+        case "button-log": fnLog(); break;
+        case "button-save-to-file": fnSaveToFile(); break;
+    }
+});
+
+function fnPrepare(oN) {
+    return new vis.DataSet(oN);
+}
+
+function fnRun() {
+    console.log(['fnRun']);
+    try {
+        document.querySelector('.top-message').innerText = '';
+        var oYAML = jsyaml.load(oEditor.getValue());
+
+        console.log(oYAML);
+
+        aNodes = Object.entries(oYAML.scheme.nodes).map((aI) => {
+            aI[1].id = aI[0];
+            return aI[1];
+        })
+        aEdges = Object.values(oYAML.scheme.edges);
+
+        oEl = document.querySelector('#network')
+        oData = {
+            nodes: fnPrepare(aNodes),
+            edges: fnPrepare(aEdges)
+        }
+
+        oNetwork.setOptions(oYAML.scheme.options);
+        oNetwork.setData(oData);
+    } catch (oE) {
+        console.log([oE]);
+        document.querySelector('.top-message').innerText = oE+'';
+    }
+}
+function fnClear() {
+    console.log(['fnClear']);
+    oEditor.setValue('');
+}
+function fnLog() {
+
+}
+function fnSaveToFile() {
+    const link = document.createElement('a');
+    link.download = `download_${(new Date()).getTime()}.png`;
+    link.href = sImageURL;
+    link.click();
+    link.delete;
+}
+
+var sTemplateYAML = 
+/*yaml*/`scheme:
+    name: "test_01"
+    options:
+        layout:
+            hierarchical:
+                direction: "LR"
+        edges:
+            smooth:
+                type: "continuous"
+        nodes:
+            shape: "box"
+        width: "1000px"
+        height: "600px"
+    styles: 
+        box_01: &box_01
+            background: "orange"
+            border: "black"
+        edge_01: &edge_01
+            type: "arrow"
+            lines_color: "#000000"
+    nodes:
+        class_01:
+            color: "red"
+            label: "Class01"
+        class_02:
+            color: 
+                <<: *box_01
+            label: "Class02"
+        class_03:
+            color: "red"
+            label: "Class01"
+        class_04:
+            color: "red"
+            label: "Class01"
+        class_05:
+            color: "red"
+            label: "Class01"
+        class_06:
+            color: "red"
+            label: "Class01"
+        class_07:
+            color: "red"
+            label: "Class01"
+        class_08:
+            color: "red"
+            label: "Class01"
+    edges:
+        relation_01:
+            # style: 
+            #   <<: *edge_01
+            from: "class_01"
+            to: "class_02"
+        relation_02:
+            from: "class_02"
+            to: "class_03"
+        relation_03:
+            from: "class_03"
+            to: "class_04"
+        relation_04:
+            from: "class_04"
+            to: "class_05"
+        relation_05:
+            from: "class_05"
+            to: "class_06"
+        relation_06:
+            from: "class_06"
+            to: "class_07"
+    `
+
+window.onload = () => {
+    oEditor = ace.edit("editor");
+    oEditor.getSession().setUseWorker(false);
+    oEditor.setTheme("ace/theme/chrome");
+    oEditor.getSession().setMode("ace/mode/yaml");
+    oEditor.setValue(sTemplateYAML);
+
+    oEditor.on('change', () => {
+        fnRun();
+    })
+
+    oEl = document.querySelector('#network')
+    oData = {
+        nodes: fnPrepare([]),
+        edges: fnPrepare([])
+    }
+
+    oNetwork = new vis.Network(
+        oEl,
+        oData,
+        oOptions
+    );
+
+    oNetwork.on("afterDrawing", function (ctx) {
+        sImageURL = ctx.canvas.toDataURL();
+    })
+
+    fnRun();
+}
+</script>
+
+<style>
+* {
+    border-radius: 0px;
+}
+
+body, html {
+    padding: 0px;
+    margin: 0px;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#left-side {
+    position: absolute;
+    width: 45vw;
+    height: 100vh;
+    border-right: 1px solid rgba(0,0,0,0.1);
+}
+
+#right-side {
+    position: absolute;
+    right: 0px;
+    width: 50vw;
+    height: 100vh;
+    overflow: scroll;
+}
+
+.top-panel {
+    height: 35px;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.top-panel > div {
+    padding: 5px;
+}
+
+.top-message {
+    font-family: monospace;
+    height: 100px;
+    overflow: scroll;
+    font-size: 12px;
+    padding: 4px;
+    white-space: pre-line;
+}
+</style>
+
+</body>
+</html>
