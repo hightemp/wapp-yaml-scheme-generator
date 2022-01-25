@@ -62,12 +62,14 @@ function fnPrepare(oN) {
 }
 
 function fnRun() {
-    console.log(['fnRun']);
+    var sErrors = ""
     try {
+        console.error = (...aM) => {
+            console.log(aM);
+            sErrors += aM.join('  ')+"\n"
+        }
         document.querySelector('.top-message').innerText = '';
         var oYAML = jsyaml.load(oEditor.getValue());
-
-        console.log(oYAML);
 
         aNodes = Object.entries(oYAML.scheme.nodes).map((aI) => {
             aI[1].id = aI[0];
@@ -84,12 +86,12 @@ function fnRun() {
         oNetwork.setOptions(oYAML.scheme.options);
         oNetwork.setData(oData);
     } catch (oE) {
-        console.log([oE]);
-        document.querySelector('.top-message').innerText = oE+'';
+        sErrors += oE+''
     }
+
+    document.querySelector('.top-message').innerText = sErrors;
 }
 function fnClear() {
-    console.log(['fnClear']);
     oEditor.setValue('');
 }
 function fnLog() {
@@ -259,7 +261,6 @@ body {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     border-bottom: 1px solid rgba(0,0,0,0.1);
-    ащте-ышяуЖ 8зчж
 }
 
 .top-panel > div {
@@ -268,7 +269,7 @@ body {
 
 .top-message {
     font-family: monospace;
-    height: 100px;
+    height: 200px;
     overflow: scroll;
     font-size: 12px;
     padding: 4px;
