@@ -9,11 +9,11 @@
 <body>
     <div id="left-side">
         <div class="top-panel">
-            <button onclick="fnRun" id="button-run">Run</button>
-            <button onclick="fnClear" id="button-clear">Clear</button>
-            <button onclick="fnLog" id="button-log">Log</button>
-            <button onclick="fnSaveImageToFile" id="button-save-to-file">Save image to file</button>
-            <button onclick="fnSaveToFile" id="button-save-to-file">Save to file</button>
+            <button id="button-run">Run</button>
+            <button id="button-clear">Clear</button>
+            <button id="button-log">Log</button>
+            <button id="button-save-image-to-file">Save image to file</button>
+            <button id="button-save-to-file">Save to file</button>
             <div>
                 <a href="https://visjs.github.io/vis-network/examples/">examples</a>
             </div>
@@ -52,6 +52,7 @@ document.body.addEventListener('click', function(e) {
         case "button-run": fnRun(); break;
         case "button-clear": fnClear(); break;
         case "button-log": fnLog(); break;
+        case "button-save-image-to-file": fnSaveImageToFile(); break;
         case "button-save-to-file": fnSaveToFile(); break;
     }
 });
@@ -94,31 +95,28 @@ function fnClear() {
 function fnLog() {
 
 }
-function fnSaveImageToFile() {
+
+function fnDownloadFileWithLink(filename, content) {
     const link = document.createElement('a');
-    link.download = `download_${(new Date()).getTime()}.png`;
-    link.href = sImageURL;
+    link.download = filename;
+    link.href = content;
     link.click();
     link.delete;
 }
 
-function downloadFile(filename, content) {
+function fnDownloadFile(filename, content) {
     var blob = new Blob([content]);
     var evt = document.createEvent("HTMLEvents");
     evt.initEvent("click");
-    // $("<a>", {
-    //     download: filename,
-    //     href: webkitURL.createObjectURL(blob)
-    // }).get(0).dispatchEvent(evt);
-    const link = document.createElement('a');
-    link.download = filename;
-    link.href = webkitURL.createObjectURL(blob)
-    //"data:text/html,"+sYAML;
-    link.click();
-    link.delete;
-};
+
+    fnDownloadFileWithLink(filename, webkitURL.createObjectURL(blob));
+}
+
+function fnSaveImageToFile() {
+    fnDownloadFileWithLink(`download_${(new Date()).getTime()}.png`, sImageURL);
+}
 function fnSaveToFile() {
-    downloadFile(`scheme_${(new Date()).getTime()}.yaml`, sYAML);
+    fnDownloadFile(`scheme_${(new Date()).getTime()}.yaml`, sYAML);
 }
 
 var sYAML = 
@@ -257,10 +255,11 @@ body {
 }
 
 .top-panel {
-    height: 35px;
+    height: 45px;
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
+    grid-template-columns: repeat(8, 1fr);
     border-bottom: 1px solid rgba(0,0,0,0.1);
+    ащте-ышяуЖ 8зчж
 }
 
 .top-panel > div {
