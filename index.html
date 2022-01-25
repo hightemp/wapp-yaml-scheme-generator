@@ -121,16 +121,20 @@ function fnSaveToFile() {
     fnDownloadFile(`scheme_${(new Date()).getTime()}.yaml`, sYAML);
 }
 
+// layout:
+//     hierarchical:
+//         direction: "LR"
+// edges:
+//     smooth:
+//         type: "continuous"
+
 var sYAML = 
 /*yaml*/`scheme:
     name: "test_01"
     options:
-        layout:
-            hierarchical:
-                direction: "LR"
-        edges:
-            smooth:
-                type: "continuous"
+        # layout:
+        #     hierarchical:
+        #         direction: "LR"
         nodes:
             shape: "box"
         width: "1000px"
