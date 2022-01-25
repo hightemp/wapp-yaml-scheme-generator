@@ -15,15 +15,13 @@
             <button id="button-save-image-to-file">Save image to file</button>
             <button id="button-save-to-file">Save to file</button>
             <div>
-                <a href="https://visjs.github.io/vis-network/examples/">examples</a>
-            </div>
-            <div>
+                <a href="https://visjs.github.io/vis-network/examples/">examples</a><br>
                 <a href="https://ww3.arb.ca.gov/ei/tools/lib/vis/docs/network.html">docs</a>
             </div>
         </div>
         <div class="top-message">
         </div>
-        <div id="editor" style="height: calc(100vh - 141px); width: 45vw;"></div>
+        <div id="editor" style="height: calc(100vh - 141px); width: 50vw;"></div>
     </div>
     <div id="right-side">
         <div id="network"></div>
@@ -205,9 +203,9 @@ window.onload = () => {
     oEditor.getSession().setMode("ace/mode/yaml");
     oEditor.setValue(sYAML);
 
-    editor.setOptions({
-        fontFamily: "Cansolas",
-        fontSize: "10pt"
+    oEditor.setOptions({
+        fontFamily: "Consolas",
+        fontSize: "10px"
     });
 
     oEditor.on('change', () => {
@@ -269,9 +267,9 @@ body {
 }
 
 .top-panel {
-    height: 45px;
+    height: 30px;
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     border-bottom: 1px solid rgba(0,0,0,0.1);
 }
 
@@ -280,8 +278,13 @@ body {
     font-size: 10px;
 }
 
+.top-panel button {
+    border: 1px solid grey;
+}
+
+
 .top-panel > div {
-    padding: 5px;
+    padding: 2px;
 }
 
 .top-message {
