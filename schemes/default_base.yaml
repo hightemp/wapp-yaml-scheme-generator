@@ -1,0 +1,20 @@
+scheme:
+  name: "new scheme 01"
+  options:
+    physics: false
+    nodes:
+      shape: "box"
+    width: "1000px"
+    height: "600px"
+  styles: 
+    style_01: &style_01
+      background: "orange"
+      border: "black"
+  nodes:
+    class_01:
+      color: "red"
+      label: "Class01"
+  edges:
+    relation_01:
+      from: "class_01"
+      to: "class_01"

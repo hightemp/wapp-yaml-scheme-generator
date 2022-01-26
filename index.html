@@ -21,9 +21,22 @@
             <div>
                 <a href="https://visjs.github.io/vis-network/examples/">examples</a><br>
                 <a href="https://ww3.arb.ca.gov/ei/tools/lib/vis/docs/network.html">docs</a>
+                <a href="https://htmlcolorcodes.com/color-names/">colors</a>
             </div>
         </div>
         <div class="top-message">
+        </div>
+        <div class="top-options">
+            <input type="text" id="scheme-name" value="noname_scheme" placeholder="scheme name" style="border: 1px solid grey" />
+            <select id="scheme-type-select">
+                <option value="yaml_visjs" selected>yaml - visjs</option>
+                <option value="yaml_pcs">yaml - project call stack</option>
+                <option value="json_visjs">json - visjs</option>
+            </select>
+            <select id="saved-scheme-select"></select>
+            <button id="save-scheme" title="save">S</button>
+            <button id="load-scheme" title="load">L</button>
+            <button id="remove-scheme" title="remove">R</button>
         </div>
         <div id="editor" style="height: calc(100vh - 141px); width: 50vw;"></div>
     </div>
@@ -37,6 +50,8 @@
 <script src="https://visjs.github.io/vis-network/standalone/umd/vis-network.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.js" integrity="sha512-CwxrLIN0dww6lRc/oKeZiI9oGlOob2HPMU0Yu0g+P3/G1cuTii+tt0jpyEKhilfrV7D/zmvKiVPIHUDU6xbBxg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
+<script src="./default_schemes_list.js"></script>
+
 <script>
 var oEditor = null;
 var oNetwork = null;
@@ -46,6 +61,8 @@ var oEl = null;
 var oData = {};
 var sImageURL = "";
 var oOptions = {}
+var aSchemes = [];
+var sEditorText = "";
 
 document.body.addEventListener('click', function(e) {
     var sID = e.target.id;
@@ -56,6 +73,10 @@ document.body.addEventListener('click', function(e) {
         case "button-log": fnLog(); break;
         case "button-save-image-to-file": fnSaveImageToFile(); break;
         case "button-save-to-file": fnSaveToFile(); break;
+
+        case "save-scheme": fnSaveCurrentScheme(); break;
+        case "load-scheme": fnLoadCurrentScheme(); break;
+        case "remove-scheme": fnRemoveCurrentScheme(); break;
     }
 });
 
@@ -63,41 +84,229 @@ function fnPrepare(oN) {
     return new vis.DataSet(oN);
 }
 
+function fnRunVisJS(sText) {
+    var oYAML = jsyaml.load(sText);
+
+    aNodes = [];
+    aEdges = [];
+    oOptions = {};
+
+    if (oYAML.scheme) {
+        if (oYAML.scheme.nodes) {
+            aNodes = Object.entries(oYAML.scheme.nodes).map((aI) => {
+                aI[1].id = aI[0];
+                return aI[1];
+            })
+        } else {
+            aErrors.push("oYAML.scheme.nodes - empty")
+        }
+        if (oYAML.scheme.edges) {
+            aEdges = Object.values(oYAML.scheme.edges);
+        } else {
+            aErrors.push("oYAML.scheme.edges - empty")
+        }
+        if (oYAML.scheme.options) {
+            oOptions = oYAML.scheme.options;
+        } else {
+            aErrors.push("oYAML.scheme.options - empty")
+        }
+    } else {
+        aErrors.push("oYAML.scheme - empty")
+    }
+
+    oEl = document.querySelector('#network')
+    oData = {
+        nodes: fnPrepare(aNodes),
+        edges: fnPrepare(aEdges)
+    }
+
+    oNetwork.setData(oData);
+    oNetwork.setOptions(oOptions);
+}
+
+var oPCSStyles = {
+    request: {
+        color: "orange",
+        shape: "dot"
+    },
+    method: {
+        color: "#639AF2",
+        shape: "square"
+    },
+    sql: {
+        color: "#E6E6E6",
+        shape: "triangle" 
+    },
+    inner_edge: {
+        length: 400,
+        arrows: {
+            to: {
+                enabled: true
+            }
+        }
+    }
+}
+
+function fnExtractCalls(aCalls, aNodes) {
+    console.log(['aNodes', aNodes ]);
+    if (!Array.isArray(aCalls)) return;
+    for (var mRow of aCalls) {
+        if (typeof mRow == "string") {
+            aNodes.push({...oPCSStyles.method, label: mRow});
+        } else if (Array.isArray(mRow)) {
+            if (mRow[0] == "GET" || mRow[0] == "POST") {
+                var sL = mRow[0]+`\n`+mRow[1]
+                aNodes.push({...oPCSStyles.request, label: sL});
+                if (mRow[2] && Array.isArray(mRow[2])) {
+                    fnExtractCalls(mRow[2], aNodes);
+                }
+            } else if (mRow[0] == "sql_fields_select") {
+                var sL = `SQL: `+mRow[1]+"."+mRow[2]+`\n`+mRow[3]+":"+mRow[4];
+                aNodes.push({...oPCSStyles.sql, label: sL});
+                fnExtractCalls(mRow[2], aNodes);
+            } else {
+                var sL = mRow[0]+"::"+mRow[1]+`\n`+mRow[2]+":"+mRow[3];
+                aNodes.push({...oPCSStyles.method, label: sL});
+                fnExtractCalls(mRow[2], aNodes);
+            }
+        }
+    }
+}
+
+function fnPrepareEdgesForCalls(aNodes, aEdges) {
+    var oNodes = {}
+    var oPrevNode = null;
+    for (var [iIndex, oNode] of Object.entries(aNodes)) {
+        oNodes[oNode.label] = iIndex;
+        oNode.id = iIndex;
+
+        if (oPrevNode) {
+            var sFrom = oNodes[oPrevNode.label];
+            var sTo = oNodes[oNode.label];
+
+            aEdges.push({
+                ...oPCSStyles.inner_edge,
+                from: sFrom,
+                to: sTo
+            });
+        }
+
+        oPrevNode = oNode;
+    }
+}
+
+function fnRunPCS(sText, aErrors) {
+    var oYAML = jsyaml.load(sText);
+
+    aNodes = [];
+    aEdges = [];
+    oOptions = {};
+
+    if (oYAML.scheme) {
+        if (oYAML.scheme.calls) {
+            // console.log(['oYAML', oYAML ]);
+            fnExtractCalls([oYAML.scheme.calls], aNodes)
+            fnPrepareEdgesForCalls(aNodes, aEdges);
+            // console.log(['>>>', aNodes, aEdges ]);
+        } else {
+            aErrors.push("oYAML.scheme.calls - empty")
+        }
+
+        if (oYAML.scheme.options) {
+            oOptions = oYAML.scheme.options;
+        } else {
+            aErrors.push("oYAML.scheme.options - empty")
+        }
+    } else {
+        aErrors.push("oYAML.scheme - empty")
+    }
+
+    oEl = document.querySelector('#network')
+    oData = {
+        nodes: fnPrepare(aNodes),
+        edges: fnPrepare(aEdges)
+    }
+
+    oNetwork.setData(oData);
+    oNetwork.setOptions(oOptions);
+}
+
 function fnRun() {
-    var sErrors = ""
+    var aErrors = []
     try {
         console.error = (...aM) => {
             console.log(aM);
-            sErrors += aM.join('  ')+"\n"
+            aErrors.push(aM.join(`\n`))
         }
         document.querySelector('.top-message').innerText = '';
-        var oYAML = jsyaml.load(oEditor.getValue());
+        sEditorText = oEditor.getValue();
+        var sType = fnGetSchemeType(); 
 
-        aNodes = Object.entries(oYAML.scheme.nodes).map((aI) => {
-            aI[1].id = aI[0];
-            return aI[1];
-        })
-        aEdges = Object.values(oYAML.scheme.edges);
-
-        oEl = document.querySelector('#network')
-        oData = {
-            nodes: fnPrepare(aNodes),
-            edges: fnPrepare(aEdges)
+        if (sType == "yaml_visjs") {
+            fnRunVisJS(sEditorText, aErrors);
+        } else if (sType == "yaml_pcs") {
+            fnRunPCS(sEditorText, aErrors);
+        } else if (sType == "json_visjs") {
         }
-
-        oNetwork.setOptions(oYAML.scheme.options);
-        oNetwork.setData(oData);
     } catch (oE) {
-        sErrors += oE+''
+        aErrors.push(oE+'')
     }
 
-    document.querySelector('.top-message').innerText = sErrors;
+    document.querySelector('.top-message').innerText = aErrors.join(`\n`);
 }
 function fnClear() {
     oEditor.setValue('');
 }
 function fnLog() {
 
+}
+
+function fnSaveCurrentScheme() {
+    var sName = fnGetSchemeName();
+    fnSaveScheme(sName, sEditorText);
+}
+function fnLoadCurrentScheme() {
+    var sName = fnGetSchemeSavedSchemeName();
+    sEditorText = fnLoadScheme(sName);
+    // console.log([sName, sEditorText]);
+    if (!sEditorText) sEditorText = aDefaultSchemes[0].sValue;
+    if (oEditor) oEditor.setValue(sEditorText);
+}
+function fnRemoveCurrentScheme() {
+    fnRemoveScheme(sName);
+}
+
+function fnSaveSchemes() {
+    localStorage.setItem('aSchemes', JSON.stringify(aSchemes));
+}
+function fnLoadSchemes() {
+    try {
+        aSchemes = JSON.parse(localStorage.getItem('aSchemes'));
+        if (!aSchemes) aSchemes = aDefaultSchemes;
+    } catch(oE) {
+        aSchemes = aDefaultSchemes;
+    }
+    fnRenderSchemes();
+}
+function fnRenderSchemes() {
+    var sHTML = ``;
+    for (oI of aSchemes) {
+        sHTML += `<option value="${oI.sName}">${oI.sName}</option>`
+    }
+    document.querySelector('#saved-scheme-select').innerHTML = sHTML;
+}
+
+function fnSaveScheme(sName, sValue) {
+    fnRemoveScheme(sName);
+    aSchemes.push({sName, sValue});
+    fnSaveSchemes();
+    fnLoadSchemes();
+}
+function fnLoadScheme(sName) {
+    return aSchemes.filter((oI) => oI.sName == sName)[0].sValue
+}
+function fnRemoveScheme(sName) {
+    aSchemes = aSchemes.filter((oI) => oI.sName != sName)
 }
 
 function fnDownloadFileWithLink(filename, content) {
@@ -116,11 +325,21 @@ function fnDownloadFile(filename, content) {
     fnDownloadFileWithLink(filename, webkitURL.createObjectURL(blob));
 }
 
+function fnGetSchemeName() {
+    return document.querySelector('#scheme-name').value
+}
+function fnGetSchemeType() {
+    return document.querySelector('#scheme-type-select').value
+}
+function fnGetSchemeSavedSchemeName() {
+    return document.querySelector('#saved-scheme-select').value
+}
+
 function fnSaveImageToFile() {
-    fnDownloadFileWithLink(`download_${(new Date()).getTime()}.png`, sImageURL);
+    fnDownloadFileWithLink(`${fnGetSchemeName()}_${(new Date()).getTime()}.png`, sImageURL);
 }
 function fnSaveToFile() {
-    fnDownloadFile(`scheme_${(new Date()).getTime()}.yaml`, sYAML);
+    fnDownloadFile(`${fnGetSchemeName()}_${(new Date()).getTime()}.yaml`, sEditorText);
 }
 
 // layout:
@@ -130,82 +349,15 @@ function fnSaveToFile() {
 //     smooth:
 //         type: "continuous"
 
-var sYAML = 
-/*yaml*/`scheme:
-    name: "test_01"
-    options:
-        # layout:
-        #     hierarchical:
-        #         direction: "LR"
-        edges:
-            smooth:
-                type: "continuous"
-        nodes:
-            shape: "box"
-        width: "1000px"
-        height: "600px"
-    styles: 
-        box_01: &box_01
-            background: "orange"
-            border: "black"
-        edge_01: &edge_01
-            type: "arrow"
-            lines_color: "#000000"
-    nodes:
-        class_01:
-            color: "red"
-            label: "Class01"
-        class_02:
-            color: 
-                <<: *box_01
-            label: "Class02"
-        class_03:
-            color: "red"
-            label: "Class01"
-        class_04:
-            color: "red"
-            label: "Class01"
-        class_05:
-            color: "red"
-            label: "Class01"
-        class_06:
-            color: "red"
-            label: "Class01"
-        class_07:
-            color: "red"
-            label: "Class01"
-        class_08:
-            color: "red"
-            label: "Class01"
-    edges:
-        relation_01:
-            # style: 
-            #   <<: *edge_01
-            from: "class_01"
-            to: "class_02"
-        relation_02:
-            from: "class_02"
-            to: "class_03"
-        relation_03:
-            from: "class_03"
-            to: "class_04"
-        relation_04:
-            from: "class_04"
-            to: "class_05"
-        relation_05:
-            from: "class_05"
-            to: "class_06"
-        relation_06:
-            from: "class_06"
-            to: "class_07"
-    `
-
 window.onload = () => {
+    fnLoadSchemes();
+    fnLoadCurrentScheme();
+
     oEditor = ace.edit("editor");
     oEditor.getSession().setUseWorker(false);
     oEditor.setTheme("ace/theme/chrome");
     oEditor.getSession().setMode("ace/mode/yaml");
-    oEditor.setValue(sYAML);
+    oEditor.setValue(sEditorText);
 
     oEditor.setOptions({
         fontFamily: "Consolas",
@@ -282,22 +434,33 @@ body {
     font-size: 10px;
 }
 
-.top-panel button {
+button {
     border: 1px solid grey;
 }
-
+button:hover {
+    background: #ddd;
+}
+button:active {
+    background: #eee;
+}
 
 .top-panel > div {
     padding: 2px;
 }
 
 .top-message {
+    columns: 2;
     font-family: monospace;
-    height: 200px;
-    overflow: scroll;
-    font-size: 12px;
+    height: 100px;
+    overflow: auto;
+    font-size: 8px;
     padding: 4px;
     white-space: pre-line;
+}
+
+.top-options {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
 }
 </style>
 

@@ -1,0 +1,33 @@
+scheme:
+  name: "new scheme 01"
+  options:
+    physics: false
+    layout:
+      hierarchical:
+        direction: "UD"
+        sortMethod: "directed"
+  blocks:
+    credit_application_01: &credit_application_01
+      - "CreditApplication" #class
+      - "initApplication" #method
+      - "app/modules/credit_application/CreditApplication.class.php" #file
+      - "222" #line
+    sqlproc_01: &sqlproc_01
+      - "SqlProc" #class
+      - "get_app_form" #method
+      - "app/modules/credit_application/SqlProc.class.php" #file
+      - "222" #line
+    request_bank_accepted_price_01: &request_bank_accepted_price_01
+      - "sql_fields_select" # type
+      - "request_bank"
+      - "accepted_price"
+      - "app/modules/credit_application/SqlProc.class.php"
+      - "1577"
+  calls:
+    - "GET"
+    - "index.php?m=CreditApplication&a=initAppForm&reg=CreditApplication&mode=additional"
+    -
+      - *credit_application_01
+      - *sqlproc_01
+      - *request_bank_accepted_price_01
+      - *credit_application_01
