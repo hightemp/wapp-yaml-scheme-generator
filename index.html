@@ -24,8 +24,6 @@
                 <a href="https://htmlcolorcodes.com/color-names/">colors</a>
             </div>
         </div>
-        <div class="top-message">
-        </div>
         <div class="top-options">
             <input type="text" id="scheme-name" value="noname_scheme" placeholder="scheme name" style="border: 1px solid grey" />
             <select id="scheme-type-select">
@@ -39,6 +37,8 @@
             <button id="remove-scheme" title="remove">R</button>
         </div>
         <div id="editor" style="height: calc(100vh - 141px); width: 50vw;"></div>
+        <div class="top-message">
+        </div>
     </div>
     <div id="right-side">
         <div id="network"></div>
@@ -137,6 +137,10 @@ var oPCSStyles = {
         color: "#E6E6E6",
         shape: "triangle" 
     },
+    tpl: {
+        color: "#00FA9A",
+        shape: "square" 
+    },
     inner_edge: {
         length: 400,
         arrows: {
@@ -147,6 +151,9 @@ var oPCSStyles = {
     }
 }
 
+var sURLPrefix = `vscode://file/`
+var sProjectPath = ``
+
 function fnExtractCalls(aCalls, aNodes) {
     console.log(['aNodes', aNodes ]);
     if (!Array.isArray(aCalls)) return;
@@ -154,23 +161,34 @@ function fnExtractCalls(aCalls, aNodes) {
         if (typeof mRow == "string") {
             aNodes.push({...oPCSStyles.method, label: mRow});
         } else if (Array.isArray(mRow)) {
-            if (mRow[0] == "GET" || mRow[0] == "POST") {
+            if (mRow[0] in { "GET":1, "POST":1 }) {
                 var sL = mRow[0]+`\n`+mRow[1]
                 aNodes.push({...oPCSStyles.request, label: sL});
-                if (mRow[2] && Array.isArray(mRow[2])) {
-                    fnExtractCalls(mRow[2], aNodes);
-                }
+                fnExtractCalls(mRow[2], aNodes);
             } else if (mRow[0] == "sql_fields_select") {
                 var sL = `SQL: `+mRow[1]+"."+mRow[2]+`\n`+mRow[3]+":"+mRow[4];
                 aNodes.push({...oPCSStyles.sql, label: sL});
-                fnExtractCalls(mRow[2], aNodes);
+                fnExtractCalls(mRow[5], aNodes);
+            } else if (mRow[0] == "tpl") {
+                var sL = ``+mRow[1]+`\n`+mRow[2]+":"+mRow[3];
+                aNodes.push({...oPCSStyles.tpl, label: sL});
+                fnExtractCalls(mRow[4], aNodes);
             } else {
                 var sL = mRow[0]+"::"+mRow[1]+`\n`+mRow[2]+":"+mRow[3];
-                aNodes.push({...oPCSStyles.method, label: sL});
-                fnExtractCalls(mRow[2], aNodes);
+                var sURL = `${sURLPrefix}${sProjectPath}${mRow[2]+":"+mRow[3]}`;
+                aNodes.push({...oPCSStyles.method, label: sL, url: sURL});
+                fnExtractCalls(mRow[4], aNodes);
             }
         }
     }
+}
+
+function fnFindNode(sID) {
+    return aNodes.filter((oI) => oI.id == sID)[0]
+}
+
+function fnFindEdge(sID) {
+    return aEdges.filter((oI) => oI.id == sID)[0]
 }
 
 function fnPrepareEdgesForCalls(aNodes, aEdges) {
@@ -229,6 +247,8 @@ function fnRunPCS(sText, aErrors) {
 
     oNetwork.setData(oData);
     oNetwork.setOptions(oOptions);
+
+    oNetwork.fit();
 }
 
 function fnRun() {
@@ -273,6 +293,7 @@ function fnLoadCurrentScheme() {
     if (oEditor) oEditor.setValue(sEditorText);
 }
 function fnRemoveCurrentScheme() {
+    var sName = fnGetSchemeSavedSchemeName();
     fnRemoveScheme(sName);
 }
 
@@ -380,9 +401,37 @@ window.onload = () => {
         oOptions
     );
 
+    oNetwork.on("beforeDrawing", function(ctx) {
+        // save current translate/zoom
+        ctx.save();
+        // reset transform to identity
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        // fill background with solid white
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+        // restore old transform
+        ctx.restore();
+    })
+
     oNetwork.on("afterDrawing", function (ctx) {
         sImageURL = ctx.canvas.toDataURL();
     })
+
+    oNetwork.on("click", function(params) {                              
+        if (params.nodes.length == 1) {
+            var nodeId = params.nodes[0];
+            var oN = fnFindNode(nodeId)
+            if (oN.url != null) {
+                window.open(oN.url, '_blank');
+            }           
+        } else if (params.edges.length==1) {
+            var edgeId = params.edges[0];       
+            var oE = fnFindEdge(edgeId)
+            if (oE.url != null) {
+                window.open(oE.url, '_blank');
+            }           
+        } 
+    });
 
     fnRun();
 }
@@ -456,6 +505,7 @@ button:active {
     font-size: 8px;
     padding: 4px;
     white-space: pre-line;
+    border: 1px solid rgba(0,0,0,0.1);
 }
 
 .top-options {

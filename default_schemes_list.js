@@ -22,6 +22,8 @@ window.aDefaultSchemes.push({ sName: "default_base.yaml", sValue: `scheme:
 window.aDefaultSchemes.push({ sName: "default_pcs.yaml", sValue: `scheme:
   name: "new scheme 01"
   options:
+    width: "500px"
+    height: "1000px"
     physics: false
     layout:
       hierarchical:
@@ -38,20 +40,36 @@ window.aDefaultSchemes.push({ sName: "default_pcs.yaml", sValue: `scheme:
       - "get_app_form" #method
       - "app/modules/credit_application/SqlProc.class.php" #file
       - "222" #line
-    request_bank_accepted_price_01: &request_bank_accepted_price_01
+    sql__request_bank_accepted_price_01: &sql__request_bank_accepted_price_01
       - "sql_fields_select" # type
       - "request_bank"
       - "accepted_price"
       - "app/modules/credit_application/SqlProc.class.php"
       - "1577"
+    tpl__requestToBank_list: &tpl__requestToBank_list
+      - "tpl" # type
+      - "list = item.notable__pp_request_bank_basic.content"
+      - "tpls/inc/request_to_bank/requestToBank-list.twig"
+      - "8"
+    tpl__request_bank__accepted_price: &tpl__request_bank__accepted_price
+      - "tpl" # type
+      - "fnc.renderBox(
+            item.request_bank__accepted_price, 
+            {label:'стоимость', format: 'money', type: 'label'}
+          )"
+      - "tpls/inc/request_to_bank/requestToBank-list__item.twig"
+      - "302"
+      
   calls:
     - "GET"
     - "index.php?m=CreditApplication&a=initAppForm&reg=CreditApplication&mode=additional"
     -
       - *credit_application_01
       - *sqlproc_01
-      - *request_bank_accepted_price_01
-      - *credit_application_01` });
+      - *sql__request_bank_accepted_price_01
+      - *credit_application_01
+      - *tpl__requestToBank_list
+      - *tpl__request_bank__accepted_price` });
 window.aDefaultSchemes.push({ sName: "default.yaml", sValue: `scheme:
     name: "test_01"
     options:
