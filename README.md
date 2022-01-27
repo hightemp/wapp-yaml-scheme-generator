@@ -9,4 +9,6 @@
 
 ## Скриншоты
 
-![](screenshots/Screenshot_20220125_134218.png)
+![](screenshots/Screenshot_20220127_145609.png)
+![](screenshots/Screenshot_20220127_145722.png)
+![](screenshots/Screenshot_20220127_145737.png)

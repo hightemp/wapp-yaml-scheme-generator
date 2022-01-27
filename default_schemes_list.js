@@ -19,6 +19,32 @@ window.aDefaultSchemes.push({ sName: "default_base.yaml", sValue: `scheme:
     relation_01:
       from: "class_01"
       to: "class_01"` });
+window.aDefaultSchemes.push({ sName: "default_flowchat.yaml", sValue: `scheme:
+  name: "new scheme 01"
+  options:
+    width: "500px"
+    height: "1000px"
+    physics: false
+    layout:
+      hierarchical:
+        direction: "UD"
+        sortMethod: "directed"
+  program:
+    - "label1: action 01"
+    - 
+      - "condition 01" # name
+      - "subaction 01" # yes
+      - 
+        - "subaction 03"
+        - "#label1 link 01" # no
+    - "action 02"
+    - "action 03"
+    -
+      - "condition 02" # name
+      - "subaction 02" # yes
+      - "#label1 link 02" # no
+    - "action 04"
+    - "action 05"` });
 window.aDefaultSchemes.push({ sName: "default_pcs.yaml", sValue: `scheme:
   name: "new scheme 01"
   options:

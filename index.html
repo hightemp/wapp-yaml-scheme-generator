@@ -27,8 +27,9 @@
         <div class="top-options">
             <input type="text" id="scheme-name" value="noname_scheme" placeholder="scheme name" style="border: 1px solid grey" />
             <select id="scheme-type-select">
-                <option value="yaml_visjs" selected>yaml - visjs</option>
+                <option value="yaml_visjs">yaml - visjs</option>
                 <option value="yaml_pcs">yaml - project call stack</option>
+                <option value="yaml_flowchart" selected>yaml - flowchart</option>
                 <option value="json_visjs">json - visjs</option>
             </select>
             <select id="saved-scheme-select"></select>
@@ -36,7 +37,7 @@
             <button id="load-scheme" title="load">L</button>
             <button id="remove-scheme" title="remove">R</button>
         </div>
-        <div id="editor" style="height: calc(100vh - 141px); width: 50vw;"></div>
+        <div id="editor" style=""></div>
         <div class="top-message">
         </div>
     </div>
@@ -61,6 +62,7 @@ var oEl = null;
 var oData = {};
 var sImageURL = "";
 var oOptions = {}
+var oDefaultOptions = {}
 var aSchemes = [];
 var sEditorText = "";
 
@@ -114,7 +116,6 @@ function fnRunVisJS(sText) {
         aErrors.push("oYAML.scheme - empty")
     }
 
-    oEl = document.querySelector('#network')
     oData = {
         nodes: fnPrepare(aNodes),
         edges: fnPrepare(aEdges)
@@ -239,7 +240,6 @@ function fnRunPCS(sText, aErrors) {
         aErrors.push("oYAML.scheme - empty")
     }
 
-    oEl = document.querySelector('#network')
     oData = {
         nodes: fnPrepare(aNodes),
         edges: fnPrepare(aEdges)
@@ -247,6 +247,195 @@ function fnRunPCS(sText, aErrors) {
 
     oNetwork.setData(oData);
     oNetwork.setOptions(oOptions);
+
+    oNetwork.fit();
+}
+
+var oFlowChartStyles = {
+    condition: {
+        color: "orange",
+        shape: "diamond"
+    },
+    method: {
+        color: "#639AF2",
+        shape: "square"
+    },
+    begin_end: {
+        color: "#E6E6E6",
+        shape: "dot" 
+    },
+    action: {
+        color: "#00FA9A",
+        shape: "dot" 
+    },
+    inner_edge: {
+        length: 400,
+        arrows: {
+            to: {
+                enabled: true
+            }
+        }
+    }
+}
+
+var iNodeIndex = 0;
+
+function fnObjCopy(oO) {
+    return JSON.parse(JSON.stringify(oO))
+}
+
+function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLabel="") {
+    if (!Array.isArray(aCalls)) return;
+    // var oPrevNode = null;
+
+    for (var mRow of aCalls) {
+
+        iNodeIndex++;
+        var sID = iNodeIndex.toString();
+        var sE = '';
+
+        if (typeof mRow == "string") {
+            // METHOD
+
+            // LABEL: ...
+            if (mRow.match(/^\w+:/)) {
+                [sE, sID, mRow] = [...mRow.match(/^(\w+):\s*(.*?)$/)]
+            }
+
+            aNodes.push({...oFlowChartStyles.method, label: mRow, id: sID });
+            if (oPrevNode) {
+                aEdges.push({
+                    ...oFlowChartStyles.inner_edge,
+                    label: sEdgeLabel,
+                    from: oPrevNode.id,
+                    to: sID
+                });
+                sEdgeLabel = "";
+            }
+            
+            oPrevNode = aNodes[aNodes.length-1];
+        } else if (Array.isArray(mRow)) {
+            // CONDITION
+            aNodes.push({...oFlowChartStyles.condition, label: mRow[0], id: sID});
+            
+            if (oPrevNode) {
+                aEdges.push({
+                    ...oFlowChartStyles.inner_edge,
+                    label: sEdgeLabel,
+                    from: oPrevNode.id,
+                    to: sID
+                });
+                sEdgeLabel = "";
+            }
+
+            oPrevNode = aNodes[aNodes.length-1];
+
+            // YES
+            var sYesID = (++iNodeIndex)+'';
+            if (typeof mRow[1] == "string") {
+                aNodes.push({...oFlowChartStyles.method, label: mRow[1], id: sYesID});
+            } else if (Array.isArray(mRow[1])) {
+                fnExtractFlowchartNodes(mRow[1], aNodes, aEdges, fnObjCopy(oPrevNode), "YES");
+            }
+
+            // NO
+            var sNoID = (++iNodeIndex)+'';
+            if (typeof mRow[2] == "string") {
+                aNodes.push({...oFlowChartStyles.method, label: mRow[2], id: sNoID});
+            } else if (Array.isArray(mRow[2])) {
+                fnExtractFlowchartNodes(mRow[2], aNodes, aEdges, fnObjCopy(oPrevNode), "NO");
+            }
+
+            // YES
+            aEdges.push({
+                ...oFlowChartStyles.inner_edge,
+                label: "YES",
+                from: sID,
+                to: sYesID
+            });
+
+            // NO
+            aEdges.push({
+                ...oFlowChartStyles.inner_edge,
+                label: "NO",
+                from: sID,
+                to: sNoID
+            });
+
+            // fnExtractFlowchartNodes(mRow[3], aNodes, aEdges, JSON.parse(JSON.stringify(oPrevNode)));
+        }
+    }
+}
+
+// function fnPrepareFlowchartEdges(aNodes, aEdges) {
+//     var oNodes = {}
+//     var oPrevNode = null;
+//     for (var [iIndex, oNode] of Object.entries(aNodes)) {
+//         oNodes[oNode.label] = iIndex;
+//         oNode.id = iIndex;
+
+//         if (oPrevNode) {
+//             if (oNode.label.match(/^(#\w+)/)) {
+//                 var sFrom = oNodes[oNode.label].id;
+//                 var aM = oNode.label.match(/^(#\w+)(.*)/);
+//                 var sTo = aM[1].replace(/#/, '');
+//                 // oNode.label = aNodes[sTo].label;
+//                 oNode.label = aM[2]
+
+//                 aEdges.push({
+//                     ...oFlowChartStyles.inner_edge,
+//                     from: sFrom,
+//                     to: sTo
+//                 });
+//             }
+
+//             var sFrom = oNodes[oPrevNode.label];
+//             var sTo = oNodes[oNode.label];
+
+//             aEdges.push({
+//                 ...oFlowChartStyles.inner_edge,
+//                 from: sFrom,
+//                 to: sTo
+//             });
+//         }
+
+//         oPrevNode = oNode;
+//     }
+// }
+
+function fnRunFlowchart(sText, aErrors) {
+    var oYAML = jsyaml.load(sText);
+
+    aNodes = [];
+    aEdges = [];
+    oOptions = {};
+    iNodeIndex = 0;
+
+    if (oYAML.scheme) {
+        if (oYAML.scheme.program) {
+            fnExtractFlowchartNodes(oYAML.scheme.program, aNodes, aEdges)
+            console.log([oYAML.scheme.program, aNodes, aEdges]);
+            // fnPrepareFlowchartEdges(aNodes, aEdges);
+        } else {
+            aErrors.push("oYAML.scheme.program - empty")
+        }
+
+        if (oYAML.scheme.options) {
+            oOptions = oYAML.scheme.options;
+        } else {
+            aErrors.push("oYAML.scheme.options - empty")
+        }
+    } else {
+        aErrors.push("oYAML.scheme - empty")
+    }
+
+    oData = {
+        nodes: fnPrepare(aNodes),
+        edges: fnPrepare(aEdges)
+    }
+
+    oNetwork.setOptions(oOptions);
+    oNetwork.setData(oData);
 
     oNetwork.fit();
 }
@@ -262,11 +451,16 @@ function fnRun() {
         sEditorText = oEditor.getValue();
         var sType = fnGetSchemeType(); 
 
+        oNetwork.setOptions(oDefaultOptions);
+
         if (sType == "yaml_visjs") {
             fnRunVisJS(sEditorText, aErrors);
         } else if (sType == "yaml_pcs") {
             fnRunPCS(sEditorText, aErrors);
+        } else if (sType == "yaml_flowchart") {
+            fnRunFlowchart(sEditorText, aErrors);
         } else if (sType == "json_visjs") {
+
         }
     } catch (oE) {
         aErrors.push(oE+'')
@@ -312,7 +506,7 @@ function fnLoadSchemes() {
 function fnRenderSchemes() {
     var sHTML = ``;
     for (oI of aSchemes) {
-        sHTML += `<option value="${oI.sName}">${oI.sName}</option>`
+        sHTML += `<option value="${oI.sName}" ${oI.sName == 'default_flowchat.yaml' ? 'selected' : ''}>${oI.sName}</option>`
     }
     document.querySelector('#saved-scheme-select').innerHTML = sHTML;
 }
@@ -395,21 +589,19 @@ window.onload = () => {
         edges: fnPrepare([])
     }
 
-    oNetwork = new vis.Network(
-        oEl,
-        oData,
-        oOptions
-    );
+    oNetwork = new vis.Network(oEl);
+
+    try {
+        oDefaultOptions = oNetwork.getOptions();
+    } catch (oE) {
+        oDefaultOptions = {}
+    }
 
     oNetwork.on("beforeDrawing", function(ctx) {
-        // save current translate/zoom
         ctx.save();
-        // reset transform to identity
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        // fill background with solid white
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-        // restore old transform
         ctx.restore();
     })
 
@@ -458,15 +650,20 @@ body {
 
 #left-side {
     position: absolute;
-    width: 50vw;
+    width: 500px;
     height: 100vh;
     border-right: 1px solid rgba(0,0,0,0.1);
+}
+
+#editor {
+    height: calc(100vh - 141px); 
+    width: 500px;
 }
 
 #right-side {
     position: absolute;
     right: 0px;
-    width: 50vw;
+    width: calc(100vw - 500px);
     height: 100vh;
     overflow: scroll;
 }
@@ -510,7 +707,7 @@ button:active {
 
 .top-options {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: 120px 110px 110px 1fr 1fr 1fr;
 }
 </style>
 
