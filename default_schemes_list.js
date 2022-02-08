@@ -1,26 +1,7 @@
 window.aDefaultSchemes = [];
-window.aDefaultSchemes.push({ sName: "default_base.yaml", sValue: `scheme:
+window.aDefaultSchemes.push({ sName: "default_gojs_flowchart.yaml", sValue: `scheme:
   name: "new scheme 01"
-  options:
-    physics: false
-    nodes:
-      shape: "box"
-    width: "1000px"
-    height: "600px"
-  styles: 
-    style_01: &style_01
-      background: "orange"
-      border: "black"
-  nodes:
-    class_01:
-      color: "red"
-      label: "Class01"
-  edges:
-    relation_01:
-      from: "class_01"
-      to: "class_01"` });
-window.aDefaultSchemes.push({ sName: "default_flowchat.yaml", sValue: `scheme:
-  name: "new scheme 01"
+  type: "yaml_gojs_flowchart"
   options:
     width: "500px"
     height: "1000px"
@@ -45,8 +26,57 @@ window.aDefaultSchemes.push({ sName: "default_flowchat.yaml", sValue: `scheme:
       - "#label1 link 02" # no
     - "action 04"
     - "action 05"` });
-window.aDefaultSchemes.push({ sName: "default_pcs.yaml", sValue: `scheme:
+window.aDefaultSchemes.push({ sName: "default_visjs_base.yaml", sValue: `scheme:
   name: "new scheme 01"
+  type: "yaml_visjs_base"
+  options:
+    physics: false
+    nodes:
+      shape: "box"
+    width: "1000px"
+    height: "600px"
+  styles: 
+    style_01: &style_01
+      background: "orange"
+      border: "black"
+  nodes:
+    class_01:
+      color: "red"
+      label: "Class01"
+  edges:
+    relation_01:
+      from: "class_01"
+      to: "class_01"` });
+window.aDefaultSchemes.push({ sName: "default_visjs_flowchart.yaml", sValue: `scheme:
+  name: "new scheme 01"
+  type: "yaml_visjs_flowchart"
+  options:
+    width: "500px"
+    height: "1000px"
+    physics: false
+    layout:
+      hierarchical:
+        direction: "UD"
+        sortMethod: "directed"
+  program:
+    - "label1: action 01"
+    - 
+      - "condition 01" # name
+      - "subaction 01" # yes
+      - 
+        - "subaction 03"
+        - "#label1 link 01" # no
+    - "action 02"
+    - "action 03"
+    -
+      - "condition 02" # name
+      - "subaction 02" # yes
+      - "#label1 link 02" # no
+    - "action 04"
+    - "action 05"` });
+window.aDefaultSchemes.push({ sName: "default_visjs_pcs.yaml", sValue: `scheme:
+  name: "new scheme 01"
+  type: "yaml_visjs_pcs"
   options:
     width: "500px"
     height: "1000px"

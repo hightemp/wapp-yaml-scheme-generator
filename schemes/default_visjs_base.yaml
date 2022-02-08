@@ -1,5 +1,6 @@
 scheme:
   name: "new scheme 01"
+  type: "yaml_visjs_base"
   options:
     physics: false
     nodes:

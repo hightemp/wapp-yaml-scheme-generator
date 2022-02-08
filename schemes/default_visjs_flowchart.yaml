@@ -1,0 +1,27 @@
+scheme:
+  name: "new scheme 01"
+  type: "yaml_visjs_flowchart"
+  options:
+    width: "500px"
+    height: "1000px"
+    physics: false
+    layout:
+      hierarchical:
+        direction: "UD"
+        sortMethod: "directed"
+  program:
+    - "label1: action 01"
+    - 
+      - "condition 01" # name
+      - "subaction 01" # yes
+      - 
+        - "subaction 03"
+        - "#label1 link 01" # no
+    - "action 02"
+    - "action 03"
+    -
+      - "condition 02" # name
+      - "subaction 02" # yes
+      - "#label1 link 02" # no
+    - "action 04"
+    - "action 05"

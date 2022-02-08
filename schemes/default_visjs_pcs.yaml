@@ -1,5 +1,6 @@
 scheme:
   name: "new scheme 01"
+  type: "yaml_visjs_pcs"
   options:
     width: "500px"
     height: "1000px"
