@@ -3,13 +3,9 @@ window.aDefaultSchemes.push({ sName: "default_gojs_flowchart.yaml", sValue: `sch
   name: "new scheme 01"
   type: "yaml_gojs_flowchart"
   options:
-    width: "500px"
+    width: "700px"
     height: "1000px"
-    physics: false
     layout:
-      hierarchical:
-        direction: "UD"
-        sortMethod: "directed"
   program:
     - "label1: action 01"
     - 

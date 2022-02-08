@@ -1,6 +1,6 @@
 import { fnObjCopy, GOJS_ID } from './lib.js'
 
-window.oApp.myDiagram = {}
+// window.oApp.myDiagram = {}
 const $ = go.GraphObject.make; 
 
 // Make link labels visible if coming out of a "conditional" node.
@@ -88,15 +88,17 @@ function textStyle() {
 
 function fnPrepareGoJSFlowChartDiagram() 
 {
-    var myDiagram = $(
-        go.Diagram,
-        GOJS_ID, // must name or refer to the DIV HTML element
-        {
-            LinkDrawn: showLinkLabel, // this DiagramEvent listener is defined below
-            LinkRelinked: showLinkLabel,
-            "undoManager.isEnabled": true, // enable undo & redo
-        }
-    );
+    var myDiagram = window.oApp.myDiagram
+
+    // var myDiagram = $(
+    //     go.Diagram,
+    //     GOJS_ID, // must name or refer to the DIV HTML element
+    //     {
+    //         LinkDrawn: showLinkLabel, // this DiagramEvent listener is defined below
+    //         LinkRelinked: showLinkLabel,
+    //         "undoManager.isEnabled": true, // enable undo & redo
+    //     }
+    // );
 
     // define the Node templates for regular nodes
 
@@ -395,12 +397,17 @@ function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLa
                 [sE, sID, mRow] = [...mRow.match(/^(\w+):\s*(.*?)$/)]
             }
 
-            aNodes.push({ text: mRow, key: sID });
+            aNodes.push({ 
+                text: mRow, 
+                key: sID 
+            });
             if (oPrevNode) {
                 aEdges.push({
                     text: sEdgeLabel,
                     from: oPrevNode.id,
-                    to: sID
+                    to: sID,
+                    "fromPort":"B", 
+                    "toPort":"T",
                 });
                 sEdgeLabel = "";
             }
@@ -408,13 +415,19 @@ function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLa
             oPrevNode = aNodes[aNodes.length-1];
         } else if (Array.isArray(mRow)) {
             // CONDITION
-            aNodes.push({text: mRow[0], key: sID});
+            aNodes.push({
+                text: mRow[0], 
+                key: sID,
+                figure: "Diamond"
+            });
             
             if (oPrevNode) {
                 aEdges.push({
                     text: sEdgeLabel,
                     from: oPrevNode.id,
-                    to: sID
+                    to: sID,
+                    "fromPort":"B", 
+                    "toPort":"T",
                 });
                 sEdgeLabel = "";
             }
@@ -424,7 +437,10 @@ function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLa
             // YES
             var sYesID = (++oA.iNodeIndex)+'';
             if (typeof mRow[1] == "string") {
-                aNodes.push({ text: mRow[1], key: sYesID});
+                aNodes.push({ 
+                    text: mRow[1], 
+                    key: sYesID
+                });
             } else if (Array.isArray(mRow[1])) {
                 fnExtractFlowchartNodes(mRow[1], aNodes, aEdges, fnObjCopy(oPrevNode), "YES");
             }
@@ -432,7 +448,10 @@ function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLa
             // NO
             var sNoID = (++oA.iNodeIndex)+'';
             if (typeof mRow[2] == "string") {
-                aNodes.push({ text: mRow[2], key: sNoID});
+                aNodes.push({ 
+                    text: mRow[2], 
+                    key: sNoID
+                });
             } else if (Array.isArray(mRow[2])) {
                 fnExtractFlowchartNodes(mRow[2], aNodes, aEdges, fnObjCopy(oPrevNode), "NO");
             }
@@ -441,14 +460,18 @@ function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLa
             aEdges.push({
                 text: "YES",
                 from: sID,
-                to: sYesID
+                to: sYesID,
+                "fromPort":"B", 
+                "toPort":"T",
             });
 
             // NO
             aEdges.push({
                 text: "NO",
                 from: sID,
-                to: sNoID
+                to: sNoID,
+                "fromPort":"B", 
+                "toPort":"T",
             });
 
             // fnExtractFlowchartNodes(mRow[3], aNodes, aEdges, JSON.parse(JSON.stringify(oPrevNode)));
