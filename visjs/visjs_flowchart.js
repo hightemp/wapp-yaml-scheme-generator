@@ -38,6 +38,7 @@ var oFlowChartStyles = {
 function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLabel="") {
     if (!Array.isArray(aCalls)) return;
     // var oPrevNode = null;
+    var oA = window.oApp;
 
     for (var mRow of aCalls) {
 

@@ -32,6 +32,7 @@ var sProjectPath = ``
 
 function fnExtractCalls(aCalls, aNodes) {
     if (!Array.isArray(aCalls)) return;
+    var oA = window.oApp;
     for (var mRow of aCalls) {
         if (typeof mRow == "string") {
             aNodes.push({...oPCSStyles.method, label: mRow});
@@ -59,14 +60,18 @@ function fnExtractCalls(aCalls, aNodes) {
 }
 
 function fnFindNode(sID) {
+    var oA = window.oApp;
     return oA.aNodes.filter((oI) => oI.id == sID)[0]
 }
 
 function fnFindEdge(sID) {
+    var oA = window.oApp;
     return oA.aEdges.filter((oI) => oI.id == sID)[0]
 }
 
 function fnPrepareEdgesForCalls(aNodes, aEdges) {
+    var oA = window.oApp;
+
     var oNodes = {}
     var oPrevNode = null;
     for (var [iIndex, oNode] of Object.entries(aNodes)) {

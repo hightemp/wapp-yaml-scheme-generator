@@ -1,5 +1,5 @@
 * {
-    border-radius: 0px;
+    border-radius: 0px !important;
 }
 
 body, html {
@@ -102,7 +102,7 @@ button:active {
 #files-panel {
     font-size: 10px;
     display: grid;
-    grid-template-rows: 60px 70px 20px auto;
+    grid-template-rows: 30px 20px 90px 30px auto;
 }
 
 #file-info-panel {
@@ -118,4 +118,8 @@ ul {
 #editor-panel {
     display: grid;
     grid-template-rows: auto 300px;
+}
+
+#types-panel {
+    border-top: 1px solid rgba(0,0,0,0.1);
 }
