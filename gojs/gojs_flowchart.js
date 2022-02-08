@@ -1,6 +1,7 @@
 import { fnObjCopy, GOJS_ID } from './lib.js'
 
 window.oApp.myDiagram = {}
+const $ = go.GraphObject.make; 
 
 // Make link labels visible if coming out of a "conditional" node.
 // This listener is called by the "LinkDrawn" and "LinkRelinked" DiagramEvents.
@@ -87,12 +88,7 @@ function textStyle() {
 
 function fnPrepareGoJSFlowChartDiagram() 
 {
-    var myDiagram = window.oApp.myDiagram;
-    // Since 2.2 you can also author concise templates with method chaining instead of GraphObject.make
-    // For details, see https://gojs.net/latest/intro/buildingObjects.html
-    const $ = go.GraphObject.make; // for conciseness in defining templates
-
-    myDiagram = $(
+    var myDiagram = $(
         go.Diagram,
         GOJS_ID, // must name or refer to the DIV HTML element
         {
@@ -101,8 +97,6 @@ function fnPrepareGoJSFlowChartDiagram()
             "undoManager.isEnabled": true, // enable undo & redo
         }
     );
-
-    
 
     // define the Node templates for regular nodes
 
@@ -346,6 +340,8 @@ function fnPrepareGoJSFlowChartDiagram()
     go.Link.Orthogonal;
     myDiagram.toolManager.relinkingTool.temporaryLink.routing =
     go.Link.Orthogonal;
+
+    return myDiagram;
 } // end init
 
 // Show the diagram's model in JSON format that the user may edit
@@ -382,6 +378,8 @@ function fnPrintDiagram()
 function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLabel="") {
     if (!Array.isArray(aCalls)) return;
     // var oPrevNode = null;
+
+    var oA = window.oApp;
 
     for (var mRow of aCalls) {
 
@@ -458,20 +456,14 @@ function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLa
     }
 }
 
-function fnRunGoJSFlowchart(oYAML, aErrors) {
-    var myDiagram = window.oApp.myDiagram;
-
+function fnPrepareNodes(oYAML, aErrors)
+{
     var oA = window.oApp;
-
-    console.log(oYAML);
 
     oA.aNodes = [];
     oA.aEdges = [];
     oA.oOptions = {};
     oA.iNodeIndex = 0;
-
-    fnPrepareGoJSFlowChartDiagram();
-    console.trace();
 
     if (oYAML.scheme) {
         if (oYAML.scheme.program) {
@@ -489,47 +481,60 @@ function fnRunGoJSFlowchart(oYAML, aErrors) {
     } else {
         aErrors.push("oYAML.scheme - empty")
     }
+}
 
-    myDiagram.model = go.Model.fromJson(
+function fnUpdateModel(oYAML, aErrors)
+{
+    var oA = window.oApp;
+
+    fnPrepareNodes(oYAML, aErrors)
+
+    window.oApp.myDiagram.model = go.Model.fromJson(
         { 
             "class": "go.GraphLinksModel",
             "linkFromPortIdProperty": "fromPort",
             "linkToPortIdProperty": "toPort",
-            ...oA.oOptions,
+            // ...oA.oOptions,
             "nodeDataArray": 
-            // oA.aNodes,
-            [
-                {"category":"Comment", "loc":"360 -10", "text":"Kookie Brittle", "key":-13},
-                {"key":-1, "category":"Start", "loc":"175 0", "text":"Start"},
-                {"key":0, "loc":"-5 75", "text":"Preheat oven to 375 F"},
-                {"key":1, "loc":"175 100", "text":"In a bowl, blend: 1 cup margarine, 1.5 teaspoon vanilla, 1 teaspoon salt"},
-                {"key":2, "loc":"175 200", "text":"Gradually beat in 1 cup sugar and 2 cups sifted flour"},
-                {"key":3, "loc":"175 290", "text":"Mix in 6 oz (1 cup) Nestle's Semi-Sweet Chocolate Morsels"},
-                {"key":4, "loc":"175 380", "text":"Press evenly into ungreased 15x10x1 pan"},
-                {"key":5, "loc":"355 85", "text":"Finely chop 1/2 cup of your choice of nuts"},
-                {"key":6, "loc":"175 450", "text":"Sprinkle nuts on top"},
-                {"key":7, "loc":"175 515", "text":"Bake for 25 minutes and let cool"},
-                {"key":8, "loc":"175 585", "text":"Cut into rectangular grid"},
-                {"key":-2, "category":"End", "loc":"175 660", "text":"Enjoy!"}
-            ],
+            oA.aNodes,
+            // [
+            //     {"category":"Comment", "loc":"360 -10", "text":"Kookie Brittle", "key":-13},
+            //     {"key":-1, "category":"Start", "loc":"175 0", "text":"Start"},
+            //     {"key":0, "loc":"-5 75", "text":"Preheat oven to 375 F"},
+            //     {"key":1, "loc":"175 100", "text":"In a bowl, blend: 1 cup margarine, 1.5 teaspoon vanilla, 1 teaspoon salt"},
+            //     {"key":2, "loc":"175 200", "text":"Gradually beat in 1 cup sugar and 2 cups sifted flour"},
+            //     {"key":3, "loc":"175 290", "text":"Mix in 6 oz (1 cup) Nestle's Semi-Sweet Chocolate Morsels"},
+            //     {"key":4, "loc":"175 380", "text":"Press evenly into ungreased 15x10x1 pan"},
+            //     {"key":5, "loc":"355 85", "text":"Finely chop 1/2 cup of your choice of nuts"},
+            //     {"key":6, "loc":"175 450", "text":"Sprinkle nuts on top"},
+            //     {"key":7, "loc":"175 515", "text":"Bake for 25 minutes and let cool"},
+            //     {"key":8, "loc":"175 585", "text":"Cut into rectangular grid"},
+            //     {"key":-2, "category":"End", "loc":"175 660", "text":"Enjoy!"}
+            // ],
             "linkDataArray": 
-            // oA.aEdges 
-            [
-                {"from":1, "to":2, "fromPort":"B", "toPort":"T"},
-                {"from":2, "to":3, "fromPort":"B", "toPort":"T"},
-                {"from":3, "to":4, "fromPort":"B", "toPort":"T"},
-                {"from":4, "to":6, "fromPort":"B", "toPort":"T"},
-                {"from":6, "to":7, "fromPort":"B", "toPort":"T"},
-                {"from":7, "to":8, "fromPort":"B", "toPort":"T"},
-                {"from":8, "to":-2, "fromPort":"B", "toPort":"T"},
-                {"from":-1, "to":0, "fromPort":"B", "toPort":"T"},
-                {"from":-1, "to":1, "fromPort":"B", "toPort":"T"},
-                {"from":-1, "to":5, "fromPort":"B", "toPort":"T"},
-                {"from":5, "to":4, "fromPort":"B", "toPort":"T"},
-                {"from":0, "to":4, "fromPort":"B", "toPort":"T"}
-            ]
+            oA.aEdges 
+            // [
+            //     {"from":1, "to":2, "fromPort":"B", "toPort":"T"},
+            //     {"from":2, "to":3, "fromPort":"B", "toPort":"T"},
+            //     {"from":3, "to":4, "fromPort":"B", "toPort":"T"},
+            //     {"from":4, "to":6, "fromPort":"B", "toPort":"T"},
+            //     {"from":6, "to":7, "fromPort":"B", "toPort":"T"},
+            //     {"from":7, "to":8, "fromPort":"B", "toPort":"T"},
+            //     {"from":8, "to":-2, "fromPort":"B", "toPort":"T"},
+            //     {"from":-1, "to":0, "fromPort":"B", "toPort":"T"},
+            //     {"from":-1, "to":1, "fromPort":"B", "toPort":"T"},
+            //     {"from":-1, "to":5, "fromPort":"B", "toPort":"T"},
+            //     {"from":5, "to":4, "fromPort":"B", "toPort":"T"},
+            //     {"from":0, "to":4, "fromPort":"B", "toPort":"T"}
+            // ]
         }
     )
+}
+
+function fnRunGoJSFlowchart(oYAML, aErrors) 
+{
+    window.oApp.myDiagram = fnPrepareGoJSFlowChartDiagram();
+    fnUpdateModel(oYAML, aErrors);
 }
 
 export {
