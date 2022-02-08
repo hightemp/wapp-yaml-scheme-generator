@@ -32,8 +32,9 @@
             </div>
 
             <div>
-                <a href="https://visjs.github.io/vis-network/examples/">examples</a>
-                <a href="https://ww3.arb.ca.gov/ei/tools/lib/vis/docs/network.html">docs</a>
+                <a href="https://visjs.github.io/vis-network/examples/">visjs examples</a>
+                <a href="https://ww3.arb.ca.gov/ei/tools/lib/vis/docs/network.html">visjs docs</a><br>
+                <a href="https://gojs.net/latest/intro">gojs docs</a>
                 <a href="https://htmlcolorcodes.com/color-names/">colors</a>
             </div>
 
@@ -62,11 +63,14 @@
         </div>
     </div>
     <div id="right-side">
-        <div id="visjs-network" style="display:none"></div>
-        <div id="gojs-network" style="display:none;height: 100%;"></div>
+        <iframe src="about:blank" name="graph-iframe" id="graph-iframe"></iframe>
     </div>
 </body>
 </html>
+
+<script>
+window.IS_MAIN = true;
+</script>
 
 <script src="https://ajaxorg.github.io/ace-builds/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.js" 

@@ -1,4 +1,4 @@
-import { fnPrepare } from './lib.js'
+import { fnPrepare, fnFindNode, fnFindEdge } from './lib.js'
 
 var oPCSStyles = {
     request: {
@@ -57,16 +57,6 @@ function fnExtractCalls(aCalls, aNodes) {
             }
         }
     }
-}
-
-function fnFindNode(sID) {
-    var oA = window.oApp;
-    return oA.aNodes.filter((oI) => oI.id == sID)[0]
-}
-
-function fnFindEdge(sID) {
-    var oA = window.oApp;
-    return oA.aEdges.filter((oI) => oI.id == sID)[0]
 }
 
 function fnPrepareEdgesForCalls(aNodes, aEdges) {

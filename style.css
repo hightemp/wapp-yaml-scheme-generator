@@ -102,7 +102,7 @@ button:active {
 #files-panel {
     font-size: 10px;
     display: grid;
-    grid-template-rows: 30px 20px 90px 30px auto;
+    grid-template-rows: 30px 30px 90px 30px auto;
 }
 
 #file-info-panel {
@@ -122,4 +122,10 @@ ul {
 
 #types-panel {
     border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+#graph-iframe {
+    width: 100%;
+    height: 100%;
+    border: 1px solid rgba(0,0,0,0.1);
 }

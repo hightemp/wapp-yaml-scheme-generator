@@ -205,15 +205,15 @@ function fnPrepareGoJSFlowChartDiagram()
             "Table",
             nodeStyle(),
             $(
-            go.Panel,
-            "Spot",
-            $(go.Shape, "Circle", {
-                desiredSize: new go.Size(60, 60),
-                fill: "#282c34",
-                stroke: "#DC3C00",
-                strokeWidth: 3.5,
-            }),
-            $(go.TextBlock, "End", textStyle(), new go.Binding("text"))
+                go.Panel,
+                "Spot",
+                $(go.Shape, "Circle", {
+                    desiredSize: new go.Size(60, 60),
+                    fill: "#282c34",
+                    stroke: "#DC3C00",
+                    strokeWidth: 3.5,
+                }),
+                $(go.TextBlock, "End", textStyle(), new go.Binding("text"))
             ),
             // three named ports, one on each side except the bottom, all input only:
             makePort("T", go.Spot.Top, go.Spot.Top, false, true),
@@ -312,28 +312,22 @@ function fnPrepareGoJSFlowChartDiagram()
             go.Panel,
             "Auto", // the link label, normally not visible
             {
-            visible: false,
-            name: "LABEL",
-            segmentIndex: 2,
-            segmentFraction: 0.5,
+                visible: true,
+                name: "LABEL",
+                segmentIndex: 2,
+                segmentFraction: 0.5
             },
-            new go.Binding("visible", "visible").makeTwoWay(),
-            $(
-            go.Shape,
-            "RoundedRectangle", // the label shape
-            { fill: "#F8F8F8", strokeWidth: 0 }
+            $(go.TextBlock, "",  // the label text
+                {
+                    // background: "lightgrey",
+                    textAlign: "center",
+                    font: "bold 10pt monospace",
+                    stroke: "black",
+                    margin: 4,
+                    editable: true  // editing the text automatically updates the model data
+                },
+                new go.Binding("text", "label").makeTwoWay()
             ),
-            $(
-            go.TextBlock,
-            "Yes", // the label
-            {
-                textAlign: "center",
-                font: "10pt helvetica, arial, sans-serif",
-                stroke: "#333333",
-                editable: true,
-            },
-            new go.Binding("text").makeTwoWay()
-            )
         )
     );
 
@@ -388,13 +382,19 @@ function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLa
         oA.iNodeIndex++;
         var sID = oA.iNodeIndex.toString();
         var sE = '';
+        var sEgdeE = "";
+        var sEdgeID = "";
 
         if (typeof mRow == "string") {
             // METHOD
 
-            // LABEL: ...
+            // label: ...
             if (mRow.match(/^\w+:/)) {
                 [sE, sID, mRow] = [...mRow.match(/^(\w+):\s*(.*?)$/)]
+            }
+
+            if (mRow.match(/^#\w+/)) {
+                [sEgdeE, sEdgeID, mRow] = [...mRow.match(/^#(\w+)\s*(.*?)$/)]
             }
 
             aNodes.push({ 
@@ -403,9 +403,20 @@ function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLa
             });
             if (oPrevNode) {
                 aEdges.push({
-                    text: sEdgeLabel,
-                    from: oPrevNode.id,
+                    label: sEdgeLabel,
+                    from: oPrevNode.key,
                     to: sID,
+                    "fromPort":"B", 
+                    "toPort":"T",
+                });
+                sEdgeLabel = "";
+            }
+
+            if (sEdgeID) {
+                aEdges.push({
+                    label: sEdgeLabel,
+                    from: sID,
+                    to: sEdgeID,
                     "fromPort":"B", 
                     "toPort":"T",
                 });
@@ -423,8 +434,8 @@ function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLa
             
             if (oPrevNode) {
                 aEdges.push({
-                    text: sEdgeLabel,
-                    from: oPrevNode.id,
+                    label: sEdgeLabel,
+                    from: oPrevNode.key,
                     to: sID,
                     "fromPort":"B", 
                     "toPort":"T",
@@ -458,7 +469,7 @@ function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLa
 
             // YES
             aEdges.push({
-                text: "YES",
+                label: "YES",
                 from: sID,
                 to: sYesID,
                 "fromPort":"B", 
@@ -467,7 +478,7 @@ function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLa
 
             // NO
             aEdges.push({
-                text: "NO",
+                label: "NO",
                 from: sID,
                 to: sNoID,
                 "fromPort":"B", 

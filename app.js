@@ -3,8 +3,8 @@ import {
     DEFAULT_SCHEME, YAML_GOJS_FLOWCHART, 
     YAML_VISJS_BASE, YAML_VISJS_PCS, YAML_VISJS_FLOWCHART, q
 } from './vars.js'
-import { fnPrepareGoJSNetwork, GOJS_ID } from './gojs/lib.js'
-import { fnPrepare, fnPrepareVisJSNetwork, VISJS_ID } from './visjs/lib.js'
+import { fnPrepareGoJSNetwork, GOJS_ID, GOJS_IFRAME_SRC } from './gojs/lib.js'
+import { fnPrepare, fnPrepareVisJSNetwork, VISJS_ID, VISJS_IFRAME_SRC } from './visjs/lib.js'
 import { fnRunVisJS } from './visjs/visjs_base.js'
 import { fnRunPCS } from './visjs/visjs_pcs.js'
 import { fnRunFlowchart } from './visjs/visjs_flowchart.js'
@@ -18,33 +18,73 @@ function fnRun() {
         q('.top-message').innerText = '';
         oA.sEditorText = oA.oEditor.getValue();
 
-        var oV = q(`#${VISJS_ID}`).style
-        var oG = q(`#${GOJS_ID}`).style
-
-        oV.display = "none"
-        oG.display = "none"
+        var oIfr = q(`#graph-iframe`)
+        // oIfr.src = "about:blank"
 
         var oYAML = jsyaml.load(oA.sEditorText)
         var sType = oYAML.scheme.type
 
         if (sType == YAML_VISJS_BASE) {
-            oV.display = "block"
+            console.trace();
+            oIfr.src = VISJS_IFRAME_SRC
+            // fnRunVisJS(oYAML, aErrors);
+        } else if (sType == YAML_VISJS_PCS) {
+            console.trace();
+            oIfr.src = VISJS_IFRAME_SRC
+            // fnRunPCS(oYAML, aErrors);
+        } else if (sType == YAML_VISJS_FLOWCHART) {
+            console.trace();
+            oIfr.src = VISJS_IFRAME_SRC
+            // fnRunFlowchart(oYAML, aErrors);
+        } else if (sType == YAML_GOJS_FLOWCHART) {
+            oIfr.src = GOJS_IFRAME_SRC
+            // fnRunGoJSFlowchart(oYAML, aErrors);
+        }
+        ((sText) => {
+            oIfr.onload = () => {
+                oIfr.contentWindow.postMessage({ sText });
+            }
+        })(oA.sEditorText)
+        console.trace();
+    } catch (oE) {
+        aErrors.push(oE+'')
+    }
+
+    q('.top-message').innerText = aErrors.join(`\n`);
+}
+
+function fnRunScript(oMessage) 
+{
+    console.trace({oMessage});
+    var oA = window.oApp;
+    var aErrors = []
+    try {
+        console.error = (...aM) => { aErrors.push(aM.join(`\n`)) }
+        // q('.top-message').innerText = '';
+        oA.sEditorText = oMessage.sText;
+
+        var oYAML = jsyaml.load(oA.sEditorText)
+        var sType = oYAML.scheme.type
+
+        if (sType == YAML_VISJS_BASE) {
+            console.trace();
             fnRunVisJS(oYAML, aErrors);
         } else if (sType == YAML_VISJS_PCS) {
-            oV.display = "block"
+            console.trace();
             fnRunPCS(oYAML, aErrors);
         } else if (sType == YAML_VISJS_FLOWCHART) {
-            oV.display = "block"
+            console.trace();
             fnRunFlowchart(oYAML, aErrors);
         } else if (sType == YAML_GOJS_FLOWCHART) {
-            oG.display = "block"
             fnRunGoJSFlowchart(oYAML, aErrors);
         }
     } catch (oE) {
         aErrors.push(oE+'')
     }
 
-    q('.top-message').innerText = aErrors.join(`\n`);
+    // q('.top-message').innerText = aErrors.join(`\n`);
+    console.log(aErrors);
+
 }
 
 function fnClear() {
@@ -182,17 +222,32 @@ function fnInit() {
         }
     });
 
-    window.addEventListener('DOMContentLoaded', () => {
-        fnLoadSchemes();
-        fnLoadCurrentScheme();
-    
-        fnPrepareEditor();
+    if (window.IS_MAIN) {
+        window.addEventListener('DOMContentLoaded', () => {
+            fnLoadSchemes();
+            fnLoadCurrentScheme();
         
-        fnPrepareVisJSNetwork();
-        fnPrepareGoJSNetwork();
+            fnPrepareEditor();
+        
+            fnRun();
+        });
+    }
     
-        fnRun();
-    });
+    if (window.IS_VISJS) {
+        window.addEventListener("message", (oE) => {
+            console.trace(oE.data);
+            fnPrepareVisJSNetwork();
+            fnRunScript(oE.data);
+        });
+    }
+
+    if (window.IS_GOJS) {
+        window.addEventListener("message", (oE) => {
+            console.trace(oE.data);
+            fnPrepareGoJSNetwork();
+            fnRunScript(oE.data);
+        });
+    }
 }
 
 export {

@@ -45,6 +45,8 @@ function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLa
         oA.iNodeIndex++;
         var sID = oA.iNodeIndex.toString();
         var sE = '';
+        var sEgdeE = "";
+        var sEdgeID = "";
 
         if (typeof mRow == "string") {
             // METHOD
@@ -54,6 +56,10 @@ function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLa
                 [sE, sID, mRow] = [...mRow.match(/^(\w+):\s*(.*?)$/)]
             }
 
+            if (mRow.match(/^#\w+/)) {
+                [sEgdeE, sEdgeID, mRow] = [...mRow.match(/^#(\w+)\s*(.*?)$/)]
+            }
+
             aNodes.push({...oFlowChartStyles.method, label: mRow, id: sID });
             if (oPrevNode) {
                 aEdges.push({
@@ -61,6 +67,15 @@ function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLa
                     label: sEdgeLabel,
                     from: oPrevNode.id,
                     to: sID
+                });
+                sEdgeLabel = "";
+            }
+
+            if (sEdgeID) {
+                aEdges.push({
+                    text: sEdgeLabel,
+                    from: sID,
+                    to: sEdgeID,
                 });
                 sEdgeLabel = "";
             }

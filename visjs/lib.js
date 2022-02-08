@@ -1,4 +1,5 @@
 const VISJS_ID = 'visjs-network'
+const VISJS_IFRAME_SRC = "visjs-iframe.html";
 
 function fnPrepare(oN) {
     return new window.vis.DataSet(oN);
@@ -6,6 +7,16 @@ function fnPrepare(oN) {
 
 function fnObjCopy(oO) {
     return JSON.parse(JSON.stringify(oO))
+}
+
+function fnFindNode(sID) {
+    var oA = window.oApp;
+    return oA.aNodes.filter((oI) => oI.id == sID)[0]
+}
+
+function fnFindEdge(sID) {
+    var oA = window.oApp;
+    return oA.aEdges.filter((oI) => oI.id == sID)[0]
 }
 
 function fnPrepareVisJSNetwork()
@@ -58,6 +69,9 @@ function fnPrepareVisJSNetwork()
 export {
     fnPrepare,
     VISJS_ID,
+    VISJS_IFRAME_SRC,
     fnObjCopy,
+    fnFindNode,
+    fnFindEdge,
     fnPrepareVisJSNetwork
 }
