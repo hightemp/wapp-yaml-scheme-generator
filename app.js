@@ -10,6 +10,12 @@ import { fnRunPCS } from './visjs/visjs_pcs.js'
 import { fnRunFlowchart } from './visjs/visjs_flowchart.js'
 import { fnRunGoJSFlowchart } from './gojs/gojs_flowchart.js'
 
+function fnSaveCanvasImage() 
+{
+    var oIfr = q(`#graph-iframe`)
+    oIfr.contentWindow.postMessage({ bSaveCanvasImage: true });
+}
+
 function fnRun() {
     var oA = window.oApp;
     var aErrors = []
@@ -176,9 +182,10 @@ function fnGetSchemeSavedSchemeName() {
 }
 
 function fnSaveImageToFile() {
-    var oA = window.oApp;
-    oA.sFileName = window.prompt("file name")
-    fnDownloadFileWithLink(`${oA.sFileName}_${(new Date()).getTime()}.png`, oA.sImageURL);
+    fnSaveCanvasImage();
+    // var oA = window.oApp;
+    // oA.sFileName = window.prompt("file name")
+    // fnDownloadFileWithLink(`${oA.sFileName}_${(new Date()).getTime()}.png`, oA.sImageURL);
 }
 function fnSaveToFile() {
     var oA = window.oApp;
@@ -239,17 +246,30 @@ function fnInit() {
     
     if (window.IS_VISJS) {
         window.addEventListener("message", (oE) => {
-            console.trace(oE.data);
-            fnPrepareVisJSNetwork();
-            fnRunScript(oE.data);
+            if ('bSaveCanvasImage' in oE.data) {
+                var sFileName = window.prompt("file name")
+                var oC = q('canvas');
+                var sImgURL = oC.toDataURL("image/png"); 
+                // .replace("image/png", "image/octet-stream");
+                fnDownloadFileWithLink(`${sFileName}_${(new Date()).getTime()}.png`, sImgURL)
+            } else {
+                fnPrepareVisJSNetwork();
+                fnRunScript(oE.data);
+            }
         });
     }
 
     if (window.IS_GOJS) {
         window.addEventListener("message", (oE) => {
-            console.trace(oE.data);
-            fnPrepareGoJSNetwork();
-            fnRunScript(oE.data);
+            if ('bSaveCanvasImage' in oE.data) {
+                var sFileName = window.prompt("file name")
+                var oC = q('canvas');
+                var sImgURL = oC.toDataURL("image/png"); 
+                fnDownloadFileWithLink(`${sFileName}_${(new Date()).getTime()}.png`, sImgURL)
+            } else {
+                fnPrepareGoJSNetwork();
+                fnRunScript(oE.data);
+            }
         });
     }
 }

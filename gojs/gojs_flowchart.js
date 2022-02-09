@@ -81,7 +81,7 @@ function makePort(name, align, spot, output, input) {
 
 function textStyle() {
     return {
-        font: "bold 11pt Lato, Helvetica, Arial, sans-serif",
+        font: "bold 8px Arial, monospace",
         stroke: "#F8F8F8",
     };
 }
@@ -116,16 +116,21 @@ function fnPrepareGoJSFlowChartDiagram()
                 go.Shape,
                 "Rectangle",
                 { fill: "#282c34", stroke: "#00A9C9", strokeWidth: 3.5 },
-                new go.Binding("figure", "figure")
+                new go.Binding("figure", "figure"),
+                new go.Binding("fill", "fill"),
+                new go.Binding("stroke", "stroke"),
             ),
             $(
                 go.TextBlock,
                 textStyle(),
                 {
-                margin: 8,
-                maxSize: new go.Size(160, NaN),
-                wrap: go.TextBlock.WrapFit,
-                editable: true,
+                    margin: 8,
+                    // maxSize: new go.Size(160, NaN),
+                    wrap: go.TextBlock.None,
+                    editable: true,
+                    isMultiline: true,
+                    // spacingAbove: -12,
+                    // spacingBelow: -12,
                 },
                 new go.Binding("text").makeTwoWay()
             )
@@ -138,89 +143,93 @@ function fnPrepareGoJSFlowChartDiagram()
         )
     );
 
-    myDiagram.nodeTemplateMap.add(
-        "Conditional",
-        $(
-            go.Node,
-            "Table",
-            nodeStyle(),
-            // the main object is a Panel that surrounds a TextBlock with a rectangular Shape
-            $(
-            go.Panel,
-            "Auto",
-            $(
-                go.Shape,
-                "Diamond",
-                { fill: "#282c34", stroke: "#00A9C9", strokeWidth: 3.5 },
-                new go.Binding("figure", "figure")
-            ),
-            $(
-                go.TextBlock,
-                textStyle(),
-                {
-                margin: 8,
-                maxSize: new go.Size(160, NaN),
-                wrap: go.TextBlock.WrapFit,
-                editable: true,
-                },
-                new go.Binding("text").makeTwoWay()
-            )
-            ),
-            // four named ports, one on each side:
-            makePort("T", go.Spot.Top, go.Spot.Top, false, true),
-            makePort("L", go.Spot.Left, go.Spot.Left, true, true),
-            makePort("R", go.Spot.Right, go.Spot.Right, true, true),
-            makePort("B", go.Spot.Bottom, go.Spot.Bottom, true, false)
-        )
-    );
+    // myDiagram.nodeTemplateMap.add(
+    //     "Conditional",
+    //     $(
+    //         go.Node,
+    //         "Table",
+    //         nodeStyle(),
+    //         // the main object is a Panel that surrounds a TextBlock with a rectangular Shape
+    //         $(
+    //         go.Panel,
+    //         "Auto",
+    //         $(
+    //             go.Shape,
+    //             // "Diamond",
+    //             "Rectangle",
+    //             { fill: "orange", stroke: "#00A9C9", strokeWidth: 3.5 },
+    //             new go.Binding("figure", "figure")
+    //         ),
+    //         $(
+    //             go.TextBlock,
+    //             textStyle(),
+    //             {
+    //                 margin: 8,
+    //                 // maxSize: new go.Size(160, NaN),
+    //                 wrap: go.TextBlock.None,
+    //                 editable: true,
+    //                 isMultiline: true,
+    //                 // spacingAbove: -12,
+    //                 // spacingBelow: -12,
+    //             },
+    //             new go.Binding("text").makeTwoWay()
+    //         )
+    //         ),
+    //         // four named ports, one on each side:
+    //         makePort("T", go.Spot.Top, go.Spot.Top, false, true),
+    //         makePort("L", go.Spot.Left, go.Spot.Left, true, true),
+    //         makePort("R", go.Spot.Right, go.Spot.Right, true, true),
+    //         makePort("B", go.Spot.Bottom, go.Spot.Bottom, true, false)
+    //     )
+    // );
 
-    myDiagram.nodeTemplateMap.add(
-        "Start",
-        $(
-            go.Node,
-            "Table",
-            nodeStyle(),
-            $(
-            go.Panel,
-            "Spot",
-            $(go.Shape, "Circle", {
-                desiredSize: new go.Size(70, 70),
-                fill: "#282c34",
-                stroke: "#09d3ac",
-                strokeWidth: 3.5,
-            }),
-            $(go.TextBlock, "Start", textStyle(), new go.Binding("text"))
-            ),
-            // three named ports, one on each side except the top, all output only:
-            makePort("L", go.Spot.Left, go.Spot.Left, true, false),
-            makePort("R", go.Spot.Right, go.Spot.Right, true, false),
-            makePort("B", go.Spot.Bottom, go.Spot.Bottom, true, false)
-        )
-    );
+    // myDiagram.nodeTemplateMap.add(
+    //     "Start",
+    //     $(
+    //         go.Node,
+    //         "Table",
+    //         nodeStyle(),
+    //         $(
+    //         go.Panel,
+    //         "Spot",
+    //         $(go.Shape, "Circle", {
+    //             desiredSize: new go.Size(70, 70),
+    //             fill: "#282c34",
+    //             stroke: "#09d3ac",
+    //             strokeWidth: 3.5,
+    //         }),
+    //         $(go.TextBlock, "Start", textStyle(), new go.Binding("text"))
+    //         ),
+    //         // three named ports, one on each side except the top, all output only:
+    //         makePort("L", go.Spot.Left, go.Spot.Left, true, false),
+    //         makePort("R", go.Spot.Right, go.Spot.Right, true, false),
+    //         makePort("B", go.Spot.Bottom, go.Spot.Bottom, true, false)
+    //     )
+    // );
 
-    myDiagram.nodeTemplateMap.add(
-        "End",
-        $(
-            go.Node,
-            "Table",
-            nodeStyle(),
-            $(
-                go.Panel,
-                "Spot",
-                $(go.Shape, "Circle", {
-                    desiredSize: new go.Size(60, 60),
-                    fill: "#282c34",
-                    stroke: "#DC3C00",
-                    strokeWidth: 3.5,
-                }),
-                $(go.TextBlock, "End", textStyle(), new go.Binding("text"))
-            ),
-            // three named ports, one on each side except the bottom, all input only:
-            makePort("T", go.Spot.Top, go.Spot.Top, false, true),
-            makePort("L", go.Spot.Left, go.Spot.Left, false, true),
-            makePort("R", go.Spot.Right, go.Spot.Right, false, true)
-        )
-    );
+    // myDiagram.nodeTemplateMap.add(
+    //     "End",
+    //     $(
+    //         go.Node,
+    //         "Table",
+    //         nodeStyle(),
+    //         $(
+    //             go.Panel,
+    //             "Spot",
+    //             $(go.Shape, "Circle", {
+    //                 desiredSize: new go.Size(60, 60),
+    //                 fill: "#282c34",
+    //                 stroke: "#DC3C00",
+    //                 strokeWidth: 3.5,
+    //             }),
+    //             $(go.TextBlock, "End", textStyle(), new go.Binding("text"))
+    //         ),
+    //         // three named ports, one on each side except the bottom, all input only:
+    //         makePort("T", go.Spot.Top, go.Spot.Top, false, true),
+    //         makePort("L", go.Spot.Left, go.Spot.Left, false, true),
+    //         makePort("R", go.Spot.Right, go.Spot.Right, false, true)
+    //     )
+    // );
 
     // taken from ../extensions/Figures.js:
     go.Shape.defineFigureGenerator("File", (shape, w, h) => {
@@ -248,21 +257,21 @@ function fnPrepareGoJSFlowChartDiagram()
             "Auto",
             nodeStyle(),
             $(go.Shape, "File", {
-            fill: "#282c34",
-            stroke: "#DEE0A3",
-            strokeWidth: 3,
+                fill: "#282c34",
+                stroke: "#DEE0A3",
+                strokeWidth: 3,
             }),
             $(
-            go.TextBlock,
-            textStyle(),
-            {
-                margin: 8,
-                maxSize: new go.Size(200, NaN),
-                wrap: go.TextBlock.WrapFit,
-                textAlign: "center",
-                editable: true,
-            },
-            new go.Binding("text").makeTwoWay()
+                go.TextBlock,
+                textStyle(),
+                {
+                    margin: 8,
+                    maxSize: new go.Size(200, NaN),
+                    wrap: go.TextBlock.WrapFit,
+                    textAlign: "center",
+                    editable: true,
+                },
+                new go.Binding("text").makeTwoWay()
             )
             // no ports, because no links are allowed to connect with a comment
         )
@@ -429,7 +438,8 @@ function fnExtractFlowchartNodes(aCalls, aNodes, aEdges, oPrevNode=null, sEdgeLa
             aNodes.push({
                 text: mRow[0], 
                 key: sID,
-                figure: "Diamond"
+                stroke: "orange",
+                // figure: "Diamond"
             });
             
             if (oPrevNode) {
