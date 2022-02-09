@@ -28,18 +28,14 @@ function fnRun() {
         if (sType == YAML_VISJS_BASE) {
             console.trace();
             oIfr.src = VISJS_IFRAME_SRC
-            // fnRunVisJS(oYAML, aErrors);
         } else if (sType == YAML_VISJS_PCS) {
             console.trace();
             oIfr.src = VISJS_IFRAME_SRC
-            // fnRunPCS(oYAML, aErrors);
         } else if (sType == YAML_VISJS_FLOWCHART) {
             console.trace();
             oIfr.src = VISJS_IFRAME_SRC
-            // fnRunFlowchart(oYAML, aErrors);
         } else if (sType == YAML_GOJS_FLOWCHART) {
             oIfr.src = GOJS_IFRAME_SRC
-            // fnRunGoJSFlowchart(oYAML, aErrors);
         }
         oIfr.contentWindow.location.reload()
         ((sText) => {
@@ -69,13 +65,10 @@ function fnRunScript(oMessage)
         var sType = oYAML.scheme.type
 
         if (sType == YAML_VISJS_BASE) {
-            console.trace();
             fnRunVisJS(oYAML, aErrors);
         } else if (sType == YAML_VISJS_PCS) {
-            console.trace();
             fnRunPCS(oYAML, aErrors);
         } else if (sType == YAML_VISJS_FLOWCHART) {
-            console.trace();
             fnRunFlowchart(oYAML, aErrors);
         } else if (sType == YAML_GOJS_FLOWCHART) {
             fnRunGoJSFlowchart(oYAML, aErrors);
@@ -102,9 +95,12 @@ function fnSaveCurrentScheme() {
     fnSaveScheme(sName, oA.sEditorText);
 }
 function fnLoadCurrentScheme() {
+    console.trace();
     var oA = window.oApp;
     var sName = fnGetSchemeSavedSchemeName();
+    console.trace(sName);
     oA.sEditorText = fnLoadScheme(sName);
+    console.trace(oA.sEditorText);
     if (!oA.sEditorText) oA.sEditorText = oA.aDefaultSchemes[0].sValue;
     if (oA.oEditor) oA.oEditor.setValue(oA.sEditorText);
 }
@@ -208,22 +204,6 @@ function fnPrepareEditor()
 }
 
 function fnInit() {
-    document.body.addEventListener('click', function(e) {
-        var sID = e.target.id;
-    
-        switch (sID) {
-            case "button-run": fnRun(); break;
-            case "button-clear": fnClear(); break;
-            case "button-log": fnLog(); break;
-            case "button-save-image-to-file": fnSaveImageToFile(); break;
-            case "button-save-to-file": fnSaveToFile(); break;
-    
-            case "save-scheme": fnSaveCurrentScheme(); break;
-            case "load-scheme": fnLoadCurrentScheme(); break;
-            case "remove-scheme": fnRemoveCurrentScheme(); break;
-        }
-    });
-
     if (window.IS_MAIN) {
         window.addEventListener('DOMContentLoaded', () => {
             fnLoadSchemes();
@@ -232,6 +212,18 @@ function fnInit() {
             fnPrepareEditor();
         
             fnRun();
+        });
+
+        document.body.addEventListener('click', function(e) {
+            if (q("#button-run").contains(e.target)) fnRun()
+            // if (q("#button-clear").contains(e.target)) fnClear()
+            // if (q("#button-log").contains(e.target)) fnLog()
+            if (q("#button-save-image-to-file").contains(e.target)) fnSaveImageToFile()
+            if (q("#button-save-to-file").contains(e.target)) fnSaveToFile()
+        
+            if (q("#save-scheme").contains(e.target)) fnSaveCurrentScheme()
+            if (q("#load-scheme").contains(e.target)) fnLoadCurrentScheme()
+            if (q("#remove-scheme").contains(e.target)) fnRemoveCurrentScheme()
         });
     }
     
