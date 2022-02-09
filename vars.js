@@ -16,6 +16,7 @@ export const DEFAULT_SCHEME = 'default_gojs_flowchart.yaml';
 window.q = document.querySelector.bind(document)
 
 window.oApp = {
+    sFileName: "",
     oEditor: null,
     oNetwork: null,
     aNodes: [],

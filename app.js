@@ -92,7 +92,7 @@ function fnLog() {
 
 function fnSaveCurrentScheme() {
     var oA = window.oApp;
-    var sName = fnGetSchemeName();
+    oA.sFileName = window.prompt("file name");
     fnSaveScheme(sName, oA.sEditorText);
 }
 function fnLoadCurrentScheme() {
@@ -150,7 +150,7 @@ function fnRemoveScheme(sName) {
 }
 
 function fnDownloadFileWithLink(filename, content) {
-    const link = q('a');
+    const link = document.createElement('a');
     link.download = filename;
     link.href = content;
     link.click();
@@ -159,7 +159,7 @@ function fnDownloadFileWithLink(filename, content) {
 
 function fnDownloadFile(filename, content) {
     var blob = new Blob([content]);
-    var evt = q("HTMLEvents");
+    var evt = document.createEvent("HTMLEvents");
     evt.initEvent("click");
 
     fnDownloadFileWithLink(filename, webkitURL.createObjectURL(blob));
@@ -177,11 +177,13 @@ function fnGetSchemeSavedSchemeName() {
 
 function fnSaveImageToFile() {
     var oA = window.oApp;
-    fnDownloadFileWithLink(`${fnGetSchemeName()}_${(new Date()).getTime()}.png`, oA.sImageURL);
+    oA.sFileName = window.prompt("file name")
+    fnDownloadFileWithLink(`${oA.sFileName}_${(new Date()).getTime()}.png`, oA.sImageURL);
 }
 function fnSaveToFile() {
     var oA = window.oApp;
-    fnDownloadFile(`${fnGetSchemeName()}_${(new Date()).getTime()}.yaml`, oA.sEditorText);
+    oA.sFileName = window.prompt("file name")
+    fnDownloadFile(`${oA.sFileName}_${(new Date()).getTime()}.yaml`, oA.sEditorText);
 }
 
 function fnPrepareEditor() 
@@ -225,6 +227,13 @@ function fnInit() {
             if (q("#save-scheme").contains(e.target)) fnSaveCurrentScheme()
             if (q("#load-scheme").contains(e.target)) fnLoadCurrentScheme()
             if (q("#remove-scheme").contains(e.target)) fnRemoveCurrentScheme()
+
+            var oSB = q("#save-dropdown-button");
+            if (oSB.contains(e.target)) 
+                oSB.parentElement.querySelector(".dropdown-menu").classList.toggle("show")
+            var oCB = q("#copy-dropdown-button");
+            if (oCB.contains(e.target)) 
+                oCB.parentElement.querySelector(".dropdown-menu").classList.toggle("show")
         });
     }
     

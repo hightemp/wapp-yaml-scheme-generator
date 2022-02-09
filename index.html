@@ -27,12 +27,34 @@
                 <button id="button-run" class="btn btn-sm btn-success" title="Run"><i class="bi bi-play-fill"></i></button>
                 <!-- <button id="button-clear" class="btn btn-sm btn-secondary" title="Clear"><i class="bi bi-trash-fill"></i></button>
                 <button id="button-log" class="btn btn-sm btn-secondary" title="Log"><i class="bi bi-card-list"></i></button> -->
-                <button id="button-save-image-to-file" class="btn btn-sm btn-secondary" title="Save as image"><i class="bi bi-save"></i></button>
-                <button id="button-save-to-file" class="btn btn-sm btn-secondary" title="Save as file"><i class="bi bi-save-fill"></i></button>
+                <!-- <button id="button-save-image-to-file" class="btn btn-sm btn-secondary" title="Save as image"><i class="bi bi-save"></i></button> -->
+                <!-- <button id="button-save-to-file" class="btn btn-sm btn-secondary" title="Save as file"><i class="bi bi-save-fill"></i></button> -->
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="save-dropdown-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="bi bi-save-fill"></i>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a id="button-save-to-file" class="dropdown-item" href="#">Сохранить в файл</a>
+                        <a class="dropdown-item" href="#">Сохранить в svg</a>
+                        <a class="dropdown-item" href="#">Сохранить в xml</a>
+                        <a id="button-save-image-to-file" class="dropdown-item" href="#">Сохранить в png</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="copy-dropdown-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="bi bi-clipboard2-check"></i>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="#">Копировать в файл</a>
+                        <a class="dropdown-item" href="#">Копировать в svg</a>
+                        <a class="dropdown-item" href="#">Копировать в xml</a>
+                        <a class="dropdown-item" href="#">Копировать в png</a>
+                    </div>
+                </div>
             </div>
 
             <div>
-                <a href="https://github.com/hightemp/wapp-yaml-scheme-generator">GITHUB</a>
+                <a href="https://github.com/hightemp/wapp-yaml-scheme-generator">GITHUB</a><br>
                 <a href="https://visjs.github.io/vis-network/examples/">visjs examples</a>
                 <a href="https://ww3.arb.ca.gov/ei/tools/lib/vis/docs/network.html">visjs docs</a><br>
                 <a href="https://gojs.net/latest/intro">gojs docs</a>

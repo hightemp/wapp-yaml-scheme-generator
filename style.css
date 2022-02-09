@@ -58,8 +58,8 @@ button:active {
     background: #eee;
 }
 
-.top-panel > div {
-    padding: 2px;
+.top-panel > div > button {
+    width: 100%;
 }
 
 .top-message {
