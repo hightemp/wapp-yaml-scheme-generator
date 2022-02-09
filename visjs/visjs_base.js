@@ -30,7 +30,7 @@ function fnRunVisJS(oYAML, aErrors) {
             aErrors.push("oYAML.scheme.edges - empty")
         }
         if (oYAML.scheme.options) {
-            oOptions = oYAML.scheme.options;
+            oA.oOptions = oYAML.scheme.options;
         } else {
             aErrors.push("oYAML.scheme.options - empty")
         }
