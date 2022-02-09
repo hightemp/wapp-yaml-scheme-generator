@@ -10,6 +10,20 @@ import { fnRunPCS } from './visjs/visjs_pcs.js'
 import { fnRunFlowchart } from './visjs/visjs_flowchart.js'
 import { fnRunGoJSFlowchart } from './gojs/gojs_flowchart.js'
 
+function fnCopyToClipboard()
+{
+    var oB = new Blob([oA.sEditorText]);
+    const oI = new ClipboardItem({ "text/yaml": oB });
+    navigator.clipboard.write([oI]); 
+}
+
+
+function fnCopyToClipboardCanvasImage()
+{
+    var oIfr = q(`#graph-iframe`)
+    oIfr.contentWindow.postMessage({ bCopyToClipboardCanvasImage: true });
+}
+
 function fnSaveCanvasImage() 
 {
     var oIfr = q(`#graph-iframe`)
@@ -86,13 +100,6 @@ function fnRunScript(oMessage)
 
     // q('.top-message').innerText = aErrors.join(`\n`);
     console.log(aErrors);
-
-}
-
-function fnClear() {
-    oEditor.setValue('');
-}
-function fnLog() {
 
 }
 
@@ -174,19 +181,15 @@ function fnDownloadFile(filename, content) {
 function fnGetSchemeName() {
     return q('#scheme-name').value
 }
-// function fnGetSchemeType() {
-//     return q('#scheme-type-select').value
-// }
+
 function fnGetSchemeSavedSchemeName() {
     return q('#saved-scheme-select').value
 }
 
 function fnSaveImageToFile() {
     fnSaveCanvasImage();
-    // var oA = window.oApp;
-    // oA.sFileName = window.prompt("file name")
-    // fnDownloadFileWithLink(`${oA.sFileName}_${(new Date()).getTime()}.png`, oA.sImageURL);
 }
+
 function fnSaveToFile() {
     var oA = window.oApp;
     oA.sFileName = window.prompt("file name")
@@ -226,10 +229,10 @@ function fnInit() {
 
         document.body.addEventListener('click', function(e) {
             if (q("#button-run").contains(e.target)) fnRun()
-            // if (q("#button-clear").contains(e.target)) fnClear()
-            // if (q("#button-log").contains(e.target)) fnLog()
             if (q("#button-save-image-to-file").contains(e.target)) fnSaveImageToFile()
             if (q("#button-save-to-file").contains(e.target)) fnSaveToFile()
+            if (q("#button-copy-image-to-file").contains(e.target)) fnCopyToClipboardCanvasImage()
+            if (q("#button-copy-to-file").contains(e.target)) fnCopyToClipboard()
         
             if (q("#save-scheme").contains(e.target)) fnSaveCurrentScheme()
             if (q("#load-scheme").contains(e.target)) fnLoadCurrentScheme()
@@ -242,6 +245,13 @@ function fnInit() {
             if (oCB.contains(e.target)) 
                 oCB.parentElement.querySelector(".dropdown-menu").classList.toggle("show")
         });
+
+        window.addEventListener("message", (oE) => {
+            if ('blob' in oE.data) {
+                const item = new ClipboardItem({ "image/png": oE.data.blob });
+                navigator.clipboard.write([item]); 
+            }
+        });
     }
     
     if (window.IS_VISJS) {
@@ -250,8 +260,14 @@ function fnInit() {
                 var sFileName = window.prompt("file name")
                 var oC = q('canvas');
                 var sImgURL = oC.toDataURL("image/png"); 
-                // .replace("image/png", "image/octet-stream");
                 fnDownloadFileWithLink(`${sFileName}_${(new Date()).getTime()}.png`, sImgURL)
+            } if ('bCopyToClipboardCanvasImage' in oE.data) {
+                var oC = q('canvas');
+                oC.toBlob(function(blob) { 
+                    oE.source.postMessage({blob})
+                    // const item = new ClipboardItem({ "image/png": blob });
+                    // navigator.clipboard.write([item]); 
+                });
             } else {
                 fnPrepareVisJSNetwork();
                 fnRunScript(oE.data);
@@ -266,6 +282,13 @@ function fnInit() {
                 var oC = q('canvas');
                 var sImgURL = oC.toDataURL("image/png"); 
                 fnDownloadFileWithLink(`${sFileName}_${(new Date()).getTime()}.png`, sImgURL)
+            } if ('bCopyToClipboardCanvasImage' in oE.data) {
+                var oC = q('canvas');
+                oC.toBlob(function(blob) {
+                    oE.source.postMessage({blob})
+                    // const item = new ClipboardItem({ "image/png": blob });
+                    // navigator.clipboard.write([item]); 
+                });
             } else {
                 fnPrepareGoJSNetwork();
                 fnRunScript(oE.data);
