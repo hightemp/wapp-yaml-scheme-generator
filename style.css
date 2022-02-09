@@ -102,7 +102,7 @@ button:active {
 #files-panel {
     font-size: 10px;
     display: grid;
-    grid-template-rows: 30px 30px 90px 30px auto;
+    grid-template-rows: 30px 50px 90px 30px auto;
 }
 
 #file-info-panel {
