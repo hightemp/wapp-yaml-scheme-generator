@@ -61,13 +61,13 @@ window.aDefaultSchemes.push({ sName: "default_visjs_flowchart.yaml", sValue: `sc
       - "subaction 01" # yes
       - 
         - "subaction 03"
-        - "#label1 link 01" # no
+        - "link 01" # no
     - "action 02"
     - "action 03"
     -
       - "condition 02" # name
       - "subaction 02" # yes
-      - "#label1 link 02" # no
+      - "link 02" # no
     - "action 04"
     - "action 05"` });
 window.aDefaultSchemes.push({ sName: "default_visjs_pcs.yaml", sValue: `scheme:
