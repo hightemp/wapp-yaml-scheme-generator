@@ -19,7 +19,8 @@ function fnRun() {
         oA.sEditorText = oA.oEditor.getValue();
 
         var oIfr = q(`#graph-iframe`)
-        // oIfr.src = "about:blank"
+        oIfr.onload = () => {}
+        oIfr.src = "about:blank"
 
         var oYAML = jsyaml.load(oA.sEditorText)
         var sType = oYAML.scheme.type
@@ -40,6 +41,7 @@ function fnRun() {
             oIfr.src = GOJS_IFRAME_SRC
             // fnRunGoJSFlowchart(oYAML, aErrors);
         }
+        oIfr.contentWindow.location.reload()
         ((sText) => {
             oIfr.onload = () => {
                 oIfr.contentWindow.postMessage({ sText });
