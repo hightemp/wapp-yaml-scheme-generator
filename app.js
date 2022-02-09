@@ -20,24 +20,25 @@ function fnRun() {
 
         var oIfr = q(`#graph-iframe`)
         oIfr.onload = () => {}
-        oIfr.src = "about:blank"
+        // oIfr.src = "about:blank"
+        var sParam = `?t=${(new Date()).getTime()}`
 
         var oYAML = jsyaml.load(oA.sEditorText)
         var sType = oYAML.scheme.type
 
         if (sType == YAML_VISJS_BASE) {
             console.trace();
-            oIfr.src = VISJS_IFRAME_SRC
+            oIfr.src = VISJS_IFRAME_SRC+sParam
         } else if (sType == YAML_VISJS_PCS) {
             console.trace();
-            oIfr.src = VISJS_IFRAME_SRC
+            oIfr.src = VISJS_IFRAME_SRC+sParam
         } else if (sType == YAML_VISJS_FLOWCHART) {
             console.trace();
-            oIfr.src = VISJS_IFRAME_SRC
+            oIfr.src = VISJS_IFRAME_SRC+sParam
         } else if (sType == YAML_GOJS_FLOWCHART) {
-            oIfr.src = GOJS_IFRAME_SRC
+            oIfr.src = GOJS_IFRAME_SRC+sParam
         }
-        oIfr.contentWindow.location.reload()
+        // oIfr.contentWindow.location.reload()
         ((sText) => {
             oIfr.onload = () => {
                 oIfr.contentWindow.postMessage({ sText });
